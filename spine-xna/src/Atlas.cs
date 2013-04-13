@@ -54,8 +54,10 @@ namespace Spine {
 
 		private Texture2D loadTexture (string path) {
 			Texture2D file;
-			using (Stream fileStream = new FileStream(path, FileMode.Open)) {
-				file = Texture2D.FromStream(device, fileStream);
+
+			using (StreamReader reader = new StreamReader(path))
+			{
+				file = Texture2D.FromStream(device, reader.BaseStream);
 			}
 
 			// Setup a render target to hold our final texture which will have premulitplied alpha values
