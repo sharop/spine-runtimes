@@ -41,14 +41,14 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Compile Include="..\spine-xna\src\Atlas.cs">
-      <Link>Atlas.cs</Link>
-    </Compile>
     <Compile Include="..\spine-xna\src\SkeletonRenderer.cs">
       <Link>SkeletonRenderer.cs</Link>
     </Compile>
     <Compile Include="..\spine-xna\src\SpriteBatcher.cs">
       <Link>SpriteBatcher.cs</Link>
+    </Compile>
+    <Compile Include="..\spine-xna\src\Util.cs">
+      <Link>Util.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

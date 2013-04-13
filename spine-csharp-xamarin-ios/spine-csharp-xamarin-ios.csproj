@@ -38,57 +38,57 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
-    <Folder Include="src\" />
+    <Folder Include="Attachments\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Compile Include="..\spine-csharp\src\Animation.cs">
-      <Link>src\Animation.cs</Link>
+      <Link>Animation.cs</Link>
     </Compile>
-    <Compile Include="..\spine-csharp\src\BaseAtlas.cs">
-      <Link>src\BaseAtlas.cs</Link>
+    <Compile Include="..\spine-csharp\src\Atlas.cs">
+      <Link>Atlas.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\Bone.cs">
-      <Link>src\Bone.cs</Link>
+      <Link>Bone.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\BoneData.cs">
-      <Link>src\BoneData.cs</Link>
+      <Link>BoneData.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\Json.cs">
-      <Link>src\Json.cs</Link>
+      <Link>Json.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\Skeleton.cs">
-      <Link>src\Skeleton.cs</Link>
+      <Link>Skeleton.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\SkeletonData.cs">
-      <Link>src\SkeletonData.cs</Link>
+      <Link>SkeletonData.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\SkeletonJson.cs">
-      <Link>src\SkeletonJson.cs</Link>
+      <Link>SkeletonJson.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\Skin.cs">
-      <Link>src\Skin.cs</Link>
+      <Link>Skin.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\Slot.cs">
-      <Link>src\Slot.cs</Link>
+      <Link>Slot.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\SlotData.cs">
-      <Link>src\SlotData.cs</Link>
+      <Link>SlotData.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\Attachments\AtlasAttachmentLoader.cs">
-      <Link>src\Attachments\AtlasAttachmentLoader.cs</Link>
+      <Link>Attachments\AtlasAttachmentLoader.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\Attachments\Attachment.cs">
-      <Link>src\Attachments\Attachment.cs</Link>
+      <Link>Attachments\Attachment.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\Attachments\AttachmentLoader.cs">
-      <Link>src\Attachments\AttachmentLoader.cs</Link>
+      <Link>Attachments\AttachmentLoader.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\Attachments\AttachmentType.cs">
-      <Link>src\Attachments\AttachmentType.cs</Link>
+      <Link>Attachments\AttachmentType.cs</Link>
     </Compile>
     <Compile Include="..\spine-csharp\src\Attachments\RegionAttachment.cs">
-      <Link>src\Attachments\RegionAttachment.cs</Link>
+      <Link>Attachments\RegionAttachment.cs</Link>
     </Compile>
   </ItemGroup>
 </Project>
