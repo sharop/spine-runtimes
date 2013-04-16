@@ -24,26 +24,30 @@
  ******************************************************************************/
 
 using System;
+using UnityEditor;
+using UnityEngine;
 
-namespace Spine {
-	public class AtlasAttachmentLoader : AttachmentLoader {
-		private Atlas atlas;
+[CustomEditor(typeof(AtlasAsset))]
+public class AtlasAssetInspector : Editor {
+	private SerializedProperty atlasFile, material;
 
-		public AtlasAttachmentLoader (Atlas atlas) {
-			if (atlas == null) throw new ArgumentNullException("atlas cannot be null.");
-			this.atlas = atlas;
-		}
+	void OnEnable () {
+		atlasFile = serializedObject.FindProperty("atlasFile");
+		material = serializedObject.FindProperty("material");
+	}
 
-		public Attachment NewAttachment (Skin skin, AttachmentType type, String name) {
-			switch (type) {
-			case AttachmentType.region:
-				AtlasRegion region = atlas.FindRegion(name);
-				if (region == null) throw new Exception("Region not found in atlas: " + name + " (" + type + ")");
-				RegionAttachment attachment = new RegionAttachment(name);
-				attachment.Region = region;
-				return attachment;
-			}
-			throw new Exception("Unknown attachment type: " + type);
+	override public void OnInspectorGUI () {
+		serializedObject.Update();
+		AtlasAsset asset = (AtlasAsset)target;
+
+		EditorGUIUtility.LookLikeInspector();
+		EditorGUILayout.PropertyField(atlasFile);
+		EditorGUILayout.PropertyField(material);
+		
+		if (serializedObject.ApplyModifiedProperties() ||
+			(Event.current.type == EventType.ValidateCommand && Event.current.commandName == "UndoRedoPerformed")
+		) {
+			asset.Clear();
 		}
 	}
 }

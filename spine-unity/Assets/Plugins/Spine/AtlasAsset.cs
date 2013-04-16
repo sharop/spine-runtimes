@@ -23,9 +23,43 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-package com.esotericsoftware.spine;
+using System;
+using System.IO;
+using UnityEngine;
+using Spine;
 
-public interface AttachmentLoader {
-	/** @return May be null to not load any attachment. */
-	public Attachment newAttachment (Skin skin, AttachmentType type, String name);
+public class AtlasAsset : ScriptableObject {
+	public TextAsset atlasFile;
+	public Material material;
+	private Atlas atlas;
+
+	public void Clear () {
+		atlas = null;
+	}
+
+	/// <returns>The atlas or null if it could not be loaded.</returns>
+	public Atlas GetAtlas () {
+		if (atlasFile == null) {
+			Debug.LogWarning("Atlas file not set for atlas asset: " + name, this);
+			Clear();
+			return null;
+		}
+
+		if (material == null) {
+			Debug.LogWarning("Material not set for atlas asset: " + name, this);
+			Clear();
+			return null;
+		}
+
+		if (atlas != null)
+			return atlas;
+
+		try {
+			atlas = new Atlas(new StringReader(atlasFile.text), material, material.mainTexture.width, material.mainTexture.height);
+			return atlas;
+		} catch (Exception) {
+			Debug.LogException(new Exception("Error reading atlas file for atlas asset: " + name), this);
+			return null;
+		}
+	}
 }
