@@ -50,6 +50,9 @@
     <Compile Include="..\spine-xna\src\Util.cs">
       <Link>Util.cs</Link>
     </Compile>
+    <Compile Include="..\spine-xna\src\XnaTextureLoader.cs">
+      <Link>XnaTextureLoader.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\MonoGame\MonoGame.Framework\MonoGame.Framework.iOS.csproj">
