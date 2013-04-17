@@ -23,40 +23,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef SPINE_REGIONATTACHMENT_H_
-#define SPINE_REGIONATTACHMENT_H_
+﻿using System;
+using System.IO;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
-#include <spine/Attachment.h>
-#include <spine/Atlas.h>
-#include <spine/Slot.h>
+namespace Spine {
+	public class XnaTextureLoader : TextureLoader {
+		GraphicsDevice device;
+		public XnaTextureLoader (GraphicsDevice device) {
+			this.device = device;
+		}
 
-#ifdef __cplusplus
-namespace spine {
-extern "C" {
-#endif
-
-typedef enum {
-	VERTEX_X1 = 0, VERTEX_Y1, VERTEX_X2, VERTEX_Y2, VERTEX_X3, VERTEX_Y3, VERTEX_X4, VERTEX_Y4
-} VertexIndex;
-
-typedef struct RegionAttachment RegionAttachment;
-struct RegionAttachment {
-	Attachment super;
-	float x, y, scaleX, scaleY, rotation, width, height;
-	AtlasRegion* region;
-	float offset[8];
-	float vertices[8];
-	float uvs[8];
-};
-
-RegionAttachment* RegionAttachment_create (const char* name);
-
-void RegionAttachment_updateOffset (RegionAttachment* self);
-void RegionAttachment_updateVertices (RegionAttachment* self, Slot* slot);
-
-#ifdef __cplusplus
+		public void Load (AtlasPage page, String path) {
+			Texture2D texture = Util.LoadTexture(device, path);
+			page.texture = texture;
+			page.width = texture.Width;
+			page.height = texture.Height;
+		}
+	}
 }
-}
-#endif
-
-#endif /* SPINE_REGIONATTACHMENT_H_ */

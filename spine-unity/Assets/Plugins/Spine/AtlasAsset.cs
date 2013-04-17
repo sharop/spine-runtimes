@@ -22,7 +22,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-
 using System;
 using System.IO;
 using UnityEngine;
@@ -55,11 +54,24 @@ public class AtlasAsset : ScriptableObject {
 			return atlas;
 
 		try {
-			atlas = new Atlas(new StringReader(atlasFile.text), material, material.mainTexture.width, material.mainTexture.height);
+			atlas = new Atlas(new StringReader(atlasFile.text), "", new SingleTextureLoader(material));
 			return atlas;
 		} catch (Exception) {
 			Debug.LogException(new Exception("Error reading atlas file for atlas asset: " + name), this);
 			return null;
 		}
+	}
+}
+
+public class SingleTextureLoader : TextureLoader {
+	Material material;
+	
+	public SingleTextureLoader (Material material) {
+		this.material = material;
+	}
+	
+	public void Load (AtlasPage page, String path) {
+		page.width = material.mainTexture.width;
+		page.height = material.mainTexture.height;
 	}
 }
