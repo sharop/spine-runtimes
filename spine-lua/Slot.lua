@@ -23,26 +23,50 @@
  -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ------------------------------------------------------------------------------
 
-local RegionAttachment = require "spine.RegionAttachment"
+local Slot = {}
+function Slot.new (slotData, skeleton, bone)
+	if not slotData then error("slotData cannot be nil", 2) end
+	if not skeleton then error("skeleton cannot be nil", 2) end
+	if not bone then error("bone cannot be nil", 2) end
 
-local AttachmentLoader = {
-	failed = {},
-	ATTACHMENT_REGION = "region"
-}
-function AttachmentLoader.new ()
-	local self = {}
+	local self = {
+		data = slotData,
+		skeleton = skeleton,
+		bone = bone
+	}
 
-	function self:newAttachment (type, name)
-		if type == AttachmentLoader.ATTACHMENT_REGION then
-			return RegionAttachment.new(name)
-		end
-		error("Unknown attachment type: " .. type .. " (" + name + ")")
+	function self:setColor (r, g, b, a)
+		self.r = r
+		self.g = g
+		self.b = b
+		self.a = a
 	end
 
-	function self:createImage (attachment)
-		return display.newImage(attachment.name .. ".png")
+	function self:setAttachment (attachment)
+		self.attachment = attachment
+		self.attachmentTime = self.skeleton.time
 	end
+
+	function self:setAttachmentTime (time)
+		self.attachmentTime = self.skeleton.time - time
+	end
+
+	function self:getAttachmentTime ()
+		return self.skeleton.time - self.attachmentTime
+	end
+
+	function self:setToBindPose ()
+		local data = self.data
+
+		self:setColor(data.r, data.g, data.b, data.a)
+
+		local attachment
+		if data.attachmentName then attachment = self.skeleton:getAttachment(data.name, data.attachmentName) end
+		self:setAttachment(attachment)
+	end
+
+	self:setToBindPose()
 
 	return self
 end
-return AttachmentLoader
+return Slot

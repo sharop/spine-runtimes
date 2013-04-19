@@ -23,56 +23,63 @@
  -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ------------------------------------------------------------------------------
 
-local utils = require "spine.utils"
-
-local Slot = {}
-function Slot.new (slotData, skeleton, bone)
-	if not slotData then error("slotData cannot be nil", 2) end
-	if not skeleton then error("skeleton cannot be nil", 2) end
-	if not bone then error("bone cannot be nil", 2) end
-
+local SkeletonData = {}
+function SkeletonData.new ()
 	local self = {
-		data = slotData,
-		skeleton = skeleton,
-		bone = bone
+		bones = {},
+		slots = {},
+		skins = {},
+		animations = {}
 	}
 
-	function self:setColor (r, g, b, a)
-		self.r = r
-		self.g = g
-		self.b = b
-		self.a = a
-	end
-
-	function self:setAttachment (attachment)
-		if self.attachment and self.attachment ~= attachment and self.skeleton.images[self.attachment] then
-			self.skeleton.images[self.attachment]:removeSelf()
-			self.skeleton.images[self.attachment] = nil
+	function self:findBone (boneName)
+		if not boneName then error("boneName cannot be nil.", 2) end
+		for i,bone in ipairs(self.bones) do
+			if bone.name == boneName then return bone end
 		end
-		self.attachment = attachment
-		self.attachmentTime = self.skeleton.time
+		return nil
 	end
 
-	function self:setAttachmentTime (time)
-		self.attachmentTime = self.skeleton.time - time
+	function self:findBoneIndex (boneName)
+		if not boneName then error("boneName cannot be nil.", 2) end
+		for i,bone in ipairs(self.bones) do
+			if bone.name == boneName then return i end
+		end
+		return -1
 	end
 
-	function self:getAttachmentTime ()
-		return self.skeleton.time - self.attachmentTime
+	function self:findSlot (slotName)
+		if not slotName then error("slotName cannot be nil.", 2) end
+		for i,slot in ipairs(self.slots) do
+			if slot.name == slotName then return slot end
+		end
+		return nil
 	end
 
-	function self:setToBindPose ()
-		local data = self.data
-
-		self:setColor(data.r, data.g, data.b, data.a)
-
-		local attachment
-		if data.attachmentName then attachment = self.skeleton:getAttachment(data.name, data.attachmentName) end
-		self:setAttachment(attachment)
+	function self:findSlotIndex (slotName)
+		if not slotName then error("slotName cannot be nil.", 2) end
+		for i,slot in ipairs(self.slots) do
+			if slot.name == slotName then return i end
+		end
+		return -1
 	end
 
-	self:setToBindPose()
+	function self:findSkin (skinName)
+		if not skinName then error("skinName cannot be nil.", 2) end
+		for i,skin in ipairs(self.skins) do
+			if skin.name == skinName then return skin end
+		end
+		return nil
+	end
+
+	function self:findAnimation (animationName)
+		if not animationName then error("animationName cannot be nil.", 2) end
+		for i,animation in ipairs(self.animations) do
+			if animation.name == animationName then return animation end
+		end
+		return nil
+	end
 
 	return self
 end
-return Slot
+return SkeletonData

@@ -60,7 +60,7 @@ public class AnimationState {
 			current.apply(skeleton, currentTime, currentLoop);
 	}
 
-	public void clear () {
+	public void clearAnimation () {
 		previous = null;
 		current = null;
 	}
@@ -102,6 +102,11 @@ public class AnimationState {
 
 	public void setTime (float time) {
 		currentTime = time;
+	}
+
+	/** Returns true if no animation is set or if the current time is greater than the animation duration, regardless of looping. */
+	public boolean isComplete () {
+		return current == null || currentTime >= current.getDuration();
 	}
 
 	public AnimationStateData getData () {

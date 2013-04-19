@@ -23,66 +23,22 @@
  -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ------------------------------------------------------------------------------
 
-local SkeletonData = {}
-function SkeletonData.new (attachmentLoader)
-	if not attachmentLoader then error("attachmentLoader cannot be nil", 2) end
+local RegionAttachment = require "spine-lua.RegionAttachment"
 
-	local self = {
-		attachmentLoader = attachmentLoader,
-		bones = {},
-		slots = {},
-		skins = {},
-		animations = {}
-	}
+local AttachmentLoader = {
+	failed = {},
+	ATTACHMENT_REGION = "region"
+}
+function AttachmentLoader.new ()
+	local self = {}
 
-	function self:findBone (boneName)
-		if not boneName then error("boneName cannot be nil.", 2) end
-		for i,bone in ipairs(self.bones) do
-			if bone.name == boneName then return bone end
+	function self:newAttachment (type, name)
+		if type == AttachmentLoader.ATTACHMENT_REGION then
+			return RegionAttachment.new(name)
 		end
-		return nil
-	end
-
-	function self:findBoneIndex (boneName)
-		if not boneName then error("boneName cannot be nil.", 2) end
-		for i,bone in ipairs(self.bones) do
-			if bone.name == boneName then return i end
-		end
-		return -1
-	end
-
-	function self:findSlot (slotName)
-		if not slotName then error("slotName cannot be nil.", 2) end
-		for i,slot in ipairs(self.slots) do
-			if slot.name == slotName then return slot end
-		end
-		return nil
-	end
-
-	function self:findSlotIndex (slotName)
-		if not slotName then error("slotName cannot be nil.", 2) end
-		for i,slot in ipairs(self.slots) do
-			if slot.name == slotName then return i end
-		end
-		return -1
-	end
-
-	function self:findSkin (skinName)
-		if not skinName then error("skinName cannot be nil.", 2) end
-		for i,skin in ipairs(self.skins) do
-			if skin.name == skinName then return skin end
-		end
-		return nil
-	end
-
-	function self:findAnimation (animationName)
-		if not animationName then error("animationName cannot be nil.", 2) end
-		for i,animation in ipairs(self.animations) do
-			if animation.name == animationName then return animation end
-		end
-		return nil
+		error("Unknown attachment type: " .. type .. " (" + name + ")")
 	end
 
 	return self
 end
-return SkeletonData
+return AttachmentLoader

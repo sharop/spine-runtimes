@@ -23,19 +23,34 @@
  -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ------------------------------------------------------------------------------
 
-local spine = {}
+local spine = require "spine-love.spine"
 
-spine.utils = require "spine.utils"
-spine.SkeletonJson = require "spine.SkeletonJson"
-spine.SkeletonData = require "spine.SkeletonData"
-spine.BoneData = require "spine.BoneData"
-spine.SlotData = require "spine.SlotData"
-spine.Skin = require "spine.Skin"
-spine.RegionAttachment = require "spine.RegionAttachment"
-spine.Skeleton = require "spine.Skeleton"
-spine.Bone = require "spine.Bone"
-spine.Slot = require "spine.Slot"
-spine.AttachmentLoader = require "spine.AttachmentLoader"
-spine.Animation = require "spine.Animation"
+local json = spine.SkeletonJson.new()
+json.scale = 1
+local skeletonData = json:readSkeletonDataFile("data/spineboy.json")
+local walkAnimation = skeletonData:findAnimation("walk")
 
-return spine
+local skeleton = spine.Skeleton.new(skeletonData)
+function skeleton:createImage (attachment)
+	-- Customize where images are loaded.
+	return love.graphics.newImage("data/" .. attachment.name .. ".png")
+end
+skeleton.x = love.graphics.getWidth() / 2
+skeleton.y = love.graphics.getHeight() / 2 + 150
+skeleton.flipX = false
+skeleton.flipY = false
+skeleton.debugBones = true -- Omit or set to false to not draw debug lines on top of the images.
+skeleton.debugSlots = false
+skeleton:setToBindPose()
+
+local animationTime = 0
+function love.update (delta)
+	animationTime = animationTime + delta
+	walkAnimation:apply(skeleton, animationTime, true)
+	skeleton:updateWorldTransform()
+end
+
+function love.draw ()
+	love.graphics.setColor(255, 255, 255)
+	skeleton:draw()
+end
