@@ -37,18 +37,18 @@
 	self = [super init];
 	if (!self) return nil;
 
-	skeletonNode = [CCSkeleton skeletonWithFile:@"spineboy.json" atlasFile:@"spineboy.atlas"];
-	AnimationStateData_setMixByName(skeletonNode->state->data, "walk", "jump", 0.4f);
-	AnimationStateData_setMixByName(skeletonNode->state->data, "jump", "walk", 0.4f);
-	AnimationState_setAnimationByName(skeletonNode->state, "walk", true);
-	skeletonNode->timeScale = 0.3f;
-	skeletonNode->debugBones = true;
+	animationNode = [CCSkeletonAnimation skeletonWithFile:@"spineboy.json" atlasFile:@"spineboy.atlas" scale:1];
+	[animationNode setMixFrom:@"walk" to:@"jump" duration:0.2f];
+	[animationNode setMixFrom:@"jump" to:@"walk" duration:0.4f];
+	[animationNode setAnimation:@"walk" loop:NO];
+	[animationNode addAnimation:@"jump" loop:NO afterDelay:0];
+	[animationNode addAnimation:@"walk" loop:YES afterDelay:0];
+	animationNode.timeScale = 0.3f;
+	animationNode.debugBones = true;
 
 	CGSize windowSize = [[CCDirector sharedDirector] winSize];
-	[skeletonNode setPosition:ccp(windowSize.width / 2, 20)];
-	[self addChild:skeletonNode];
-
-	[self scheduleUpdate];
+	[animationNode setPosition:ccp(windowSize.width / 2, 20)];
+	[self addChild:animationNode];
 
 #if __CC_PLATFORM_MAC
 	[self setMouseEnabled:YES];
@@ -57,22 +57,14 @@
 	return self;
 }
 
-- (void) update:(ccTime)delta {
-    if (skeletonNode->state->loop) {
-        if (skeletonNode->state->time > 2) AnimationState_setAnimationByName(skeletonNode->state, "jump", false);
-    } else {
-        if (skeletonNode->state->time > 1) AnimationState_setAnimationByName(skeletonNode->state, "walk", true);
-    }
-}
-
 #if __CC_PLATFORM_MAC
 - (BOOL) ccMouseDown:(NSEvent*)event {
 	CCDirector* director = [CCDirector sharedDirector];
 	NSPoint location =  [director convertEventToGL:event];
 	location.x -= [[director runningScene]position].x;
 	location.y -= [[director runningScene]position].y;
-	location.x -= skeletonNode.position.x;
-	location.y -= skeletonNode.position.y;
+	location.x -= animationNode.position.x;
+	location.y -= animationNode.position.y;
 	if (CGRectContainsPoint(skeletonNode.boundingBox, location)) NSLog(@"Clicked!");
 	return YES;
 }
