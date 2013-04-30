@@ -32,19 +32,19 @@ using std::max;
 
 namespace spine {
 
-static CCSkeleton* createWithData (SkeletonData* skeletonData, bool ownsSkeletonData) {
+CCSkeleton* CCSkeleton::createWithData (SkeletonData* skeletonData, bool ownsSkeletonData) {
 	CCSkeleton* node = new CCSkeleton(skeletonData, ownsSkeletonData);
 	node->autorelease();
 	return node;
 }
 
-static CCSkeleton* createWithFile (const char* skeletonDataFile, Atlas* atlas, float scale) {
+CCSkeleton* CCSkeleton::createWithFile (const char* skeletonDataFile, Atlas* atlas, float scale) {
 	CCSkeleton* node = new CCSkeleton(skeletonDataFile, atlas, scale);
 	node->autorelease();
 	return node;
 }
 
-static CCSkeleton* createWithFile (const char* skeletonDataFile, const char* atlasFile, float scale) {
+CCSkeleton* CCSkeleton::createWithFile (const char* skeletonDataFile, const char* atlasFile, float scale) {
 	CCSkeleton* node = new CCSkeleton(skeletonDataFile, atlasFile, scale);
 	node->autorelease();
 	return node;
@@ -219,11 +219,7 @@ CCRect CCSkeleton::boundingBox () {
 		maxY = max(maxY, quad.tr.vertices.y * scaleY);
 	}
 	CCPoint position = getPosition();
-	minX = position.x + minX;
-	minY = position.y + minY;
-	maxX = position.x + maxX;
-	maxY = position.y + maxY;
-	return CCRectMake(minX, minY, maxX - minX, maxY - minY);
+	return CCRectMake(position.x + minX, position.y + minY, maxX - minX, maxY - minY);
 }
 
 // CCBlendProtocol
