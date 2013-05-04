@@ -1,9 +1,7 @@
-package spine {
+package spine.flash {
 import spine.AnimationState;
 import spine.AnimationStateData;
 import spine.SkeletonData;
-
-import starling.events.EnterFrameEvent;
 
 public class SkeletonAnimationSprite extends SkeletonSprite {
 	public var states:Vector.<AnimationState> = new Vector.<AnimationState>();
@@ -13,15 +11,13 @@ public class SkeletonAnimationSprite extends SkeletonSprite {
 		addAnimationState();
 	}
 
-	override protected function onEnterFrame (event:EnterFrameEvent) : void {
-		super.onEnterFrame(event);
-
-		var deltaTime:Number = event.passedTime * timeScale;
+	override public function advanceTime (time:Number) : void {
 		for each (var state:AnimationState in states) {
-			state.update(deltaTime);
+			state.update(time);
 			state.apply(skeleton);
 		}
 		skeleton.updateWorldTransform();
+		super.advanceTime(time);
 	}
 
 	public function addAnimationState (stateData:AnimationStateData = null) : void {

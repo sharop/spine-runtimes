@@ -1,4 +1,4 @@
-package spine {
+package spine.starling {
 
 import starling.display.Image;
 import starling.textures.Texture;
@@ -11,6 +11,10 @@ public class SkeletonImage extends Image {
 
 	public function get vertexData () : VertexData {
 		return mVertexData;
+	}
+
+	public function updateVertices () : void {
+		onVertexDataChanged();
 	}
 
 	override public function get tinted () : Boolean {
