@@ -135,7 +135,7 @@ void CCSkeleton::draw () {
 		Slot* slot = skeleton->slots[i];
 		if (!slot->attachment || slot->attachment->type != ATTACHMENT_REGION) continue;
 		RegionAttachment* attachment = (RegionAttachment*)slot->attachment;
-		CCTextureAtlas* regionTextureAtlas = (CCTextureAtlas*)attachment->texture;
+		CCTextureAtlas* regionTextureAtlas = (CCTextureAtlas*)((AtlasRegion*)attachment->rendererObject)->page->rendererObject;
 		if (regionTextureAtlas != textureAtlas) {
 			if (textureAtlas) {
 				textureAtlas->drawQuads();
@@ -229,14 +229,14 @@ void CCSkeleton::updateWorldTransform () {
 	Skeleton_updateWorldTransform(skeleton);
 }
 
-void CCSkeleton::setToBindPose () {
-	Skeleton_setToBindPose(skeleton);
+void CCSkeleton::setToSetupPose () {
+	Skeleton_setToSetupPose(skeleton);
 }
-void CCSkeleton::setBonesToBindPose () {
-	Skeleton_setBonesToBindPose(skeleton);
+void CCSkeleton::setBonesToSetupPose () {
+	Skeleton_setBonesToSetupPose(skeleton);
 }
-void CCSkeleton::setSlotsToBindPose () {
-	Skeleton_setSlotsToBindPose(skeleton);
+void CCSkeleton::setSlotsToSetupPose () {
+	Skeleton_setSlotsToSetupPose(skeleton);
 }
 
 Bone* CCSkeleton::findBone (const char* boneName) const {

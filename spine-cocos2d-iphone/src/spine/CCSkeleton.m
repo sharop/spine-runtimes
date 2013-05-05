@@ -143,7 +143,7 @@
 		Slot* slot = _skeleton->slots[i];
 		if (!slot->attachment || slot->attachment->type != ATTACHMENT_REGION) continue;
 		RegionAttachment* attachment = (RegionAttachment*)slot->attachment;
-		CCTextureAtlas* regionTextureAtlas = (CCTextureAtlas*)attachment->texture;
+		CCTextureAtlas* regionTextureAtlas = (CCTextureAtlas*)attachment->rendererObject;
 		if (regionTextureAtlas != textureAtlas) {
 			if (textureAtlas) {
 				[textureAtlas drawQuads];
@@ -240,14 +240,14 @@
 	Skeleton_updateWorldTransform(_skeleton);
 }
 
-- (void) setToBindPose {
-	Skeleton_setToBindPose(_skeleton);
+- (void) setToSetupPose {
+	Skeleton_setToSetupPose(_skeleton);
 }
-- (void) setBonesToBindPose {
-	Skeleton_setBonesToBindPose(_skeleton);
+- (void) setBonesToSetupPose {
+	Skeleton_setBonesToSetupPose(_skeleton);
 }
-- (void) setSlotsToBindPose {
-	Skeleton_setSlotsToBindPose(_skeleton);
+- (void) setSlotsToSetupPose {
+	Skeleton_setSlotsToSetupPose(_skeleton);
 }
 
 - (Bone*) findBone:(NSString*)boneName {
