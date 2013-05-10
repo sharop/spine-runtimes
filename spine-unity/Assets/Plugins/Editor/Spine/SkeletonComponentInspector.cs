@@ -29,13 +29,11 @@ using UnityEngine;
 
 [CustomEditor(typeof(SkeletonComponent))]
 public class SkeletonComponentInspector : Editor {
-	private SerializedProperty skeletonDataAsset, animationName, skinName, loop, timeScale;
+	private SerializedProperty skeletonDataAsset, initialSkinName, timeScale;
 
 	void OnEnable () {
 		skeletonDataAsset = serializedObject.FindProperty("skeletonDataAsset");
-		skinName = serializedObject.FindProperty("skinName");
-		animationName = serializedObject.FindProperty("animationName");
-		loop = serializedObject.FindProperty("loop");
+		initialSkinName = serializedObject.FindProperty("initialSkinName");
 		timeScale = serializedObject.FindProperty("timeScale");
 	}
 
@@ -47,49 +45,24 @@ public class SkeletonComponentInspector : Editor {
 		EditorGUILayout.PropertyField(skeletonDataAsset);
 		
 		if (component.skeleton != null) {
-			// Skin name.
+			// Initial skin name.
 			String[] skins = new String[component.skeleton.Data.Skins.Count + 1];
 			int skinIndex = 0;
 			for (int i = 0; i < skins.Length - 1; i++) {
 				String name = component.skeleton.Data.Skins[i].Name;
 				skins[i] = name;
-				if (name == skinName.stringValue) skinIndex = i;
+				if (name == initialSkinName.stringValue) skinIndex = i;
 			}
 		
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Skin");
+			EditorGUILayout.LabelField("Initial Skin");
 			EditorGUIUtility.LookLikeControls();
 			skinIndex = EditorGUILayout.Popup(skinIndex, skins);
 			EditorGUIUtility.LookLikeInspector();
 			EditorGUILayout.EndHorizontal();
 		
-			skinName.stringValue = skinIndex == 0 ? null : skins[skinIndex];
-
-			// Animation name.
-			String[] animations = new String[component.skeleton.Data.Animations.Count + 1];
-			animations[0] = "<None>";
-			int animationIndex = 0;
-			for (int i = 0; i < animations.Length - 1; i++) {
-				String name = component.skeleton.Data.Animations[i].Name;
-				animations[i + 1] = name;
-				if (name == animationName.stringValue) animationIndex = i + 1;
-			}
-		
-			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Animation");
-			EditorGUIUtility.LookLikeControls();
-			animationIndex = EditorGUILayout.Popup(animationIndex, animations);
-			EditorGUIUtility.LookLikeInspector();
-			EditorGUILayout.EndHorizontal();
-		
-			animationName.stringValue = animationIndex == 0 ? null : animations[animationIndex];
+			initialSkinName.stringValue = skinIndex == 0 ? null : skins[skinIndex];
 		}
-
-		// Animation loop.
-		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Loop");
-		loop.boolValue = EditorGUILayout.Toggle(loop.boolValue);
-		EditorGUILayout.EndHorizontal();
 
 		EditorGUILayout.PropertyField(timeScale);
 		

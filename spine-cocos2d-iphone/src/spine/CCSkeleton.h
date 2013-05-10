@@ -26,10 +26,6 @@
 #import <spine/spine.h>
 #import "cocos2d.h"
 
-#ifdef __cplusplus
-using namespace spine;
-#endif
-
 /**
 Draws a skeleton.
 */
@@ -52,6 +48,8 @@ Draws a skeleton.
 - (id) initWithData:(SkeletonData*)skeletonData ownsSkeletonData:(bool)ownsSkeletonData;
 - (id) initWithFile:(NSString*)skeletonDataFile atlas:(Atlas*)atlas scale:(float)scale;
 - (id) initWithFile:(NSString*)skeletonDataFile atlasFile:(NSString*)atlasFile scale:(float)scale;
+
+- (CCTextureAtlas*) getTextureAtlas:(RegionAttachment*)regionAttachment;
 
 // --- Convenience methods for common Skeleton_* functions.
 - (void) updateWorldTransform;
