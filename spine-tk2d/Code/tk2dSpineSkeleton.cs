@@ -10,7 +10,7 @@ using Spine;
 [ExecuteInEditMode]
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshRenderer))]
-public class tk2dSpineSkeleton : MonoBehaviour {
+public class tk2dSpineSkeleton : MonoBehaviour, tk2dRuntime.ISpriteCollectionForceBuild {
 	
 	/*
 	 */
@@ -131,13 +131,26 @@ public class tk2dSpineSkeleton : MonoBehaviour {
 			}
 		}
 		
+		mesh.Clear();
+		
 		mesh.vertices = vertices;
 		mesh.colors = colors;
 		mesh.uv = uvs;
 		mesh.triangles = triangles;
-		mesh.RecalculateNormals();
 		
-		renderer.sharedMaterial = skeletonDataAsset.sprites.spriteCollection.materials[0];
+		if (skeletonDataAsset.normalGenerationMode != tk2dSpriteCollection.NormalGenerationMode.None) {
+			mesh.RecalculateNormals();
+
+			if (skeletonDataAsset.normalGenerationMode == tk2dSpriteCollection.NormalGenerationMode.NormalsAndTangents) {
+				Vector4[] tangents = new Vector4[mesh.normals.Length];
+				for (int t = 0; t < tangents.Length; ++t) {
+					tangents[t] = new Vector4(1, 0, 0, 1);
+				}
+				mesh.tangents = tangents;
+			}
+		}
+		
+		renderer.sharedMaterial = skeletonDataAsset.spritesData.inst.materials[0];
 	}
 	
 	/*
@@ -187,5 +200,16 @@ public class tk2dSpineSkeleton : MonoBehaviour {
 		// Update animation
 		state.Update(Time.deltaTime * animationSpeed);
 		state.Apply(skeleton);
+	}
+
+	public bool UsesSpriteCollection(tk2dSpriteCollectionData spriteCollection) {
+		return skeletonDataAsset.spritesData == spriteCollection;
+	}
+
+	public void ForceBuild() {
+		skeletonDataAsset.ForceUpdate();
+		skeleton = new Skeleton(skeletonDataAsset.GetSkeletonData());
+		
+		UpdateMesh();
 	}
 }
