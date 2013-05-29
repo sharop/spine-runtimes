@@ -38,12 +38,29 @@ function Bone.new (data, parent)
 		if parent then
 			self.worldX = self.x * parent.m00 + self.y * parent.m01 + parent.worldX
 			self.worldY = self.x * parent.m10 + self.y * parent.m11 + parent.worldY
-			self.worldScaleX = parent.worldScaleX * self.scaleX
-			self.worldScaleY = parent.worldScaleY * self.scaleY
-			self.worldRotation = parent.worldRotation + self.rotation
+      if (self.data.inheritScale) then
+          self.worldScaleX = parent.worldScaleX * self.scaleX
+          self.worldScaleY = parent.worldScaleY * self.scaleY
+      else
+          self.worldScaleX = self.scaleX
+          self.worldScaleY = self.scaleY
+      end
+      if (self.data.inheritRotation) then
+          self.worldRotation = parent.worldRotation + self.rotation
+      else
+          self.worldRotation = self.rotation
+      end
 		else
-			self.worldX = self.x
-			self.worldY = self.y
+			if flipX then
+				self.worldX = -self.x
+			else
+				self.worldX = self.x
+			end
+			if flipY then
+				self.worldY = -self.y
+			else
+				self.worldY = self.y
+			end
 			self.worldScaleX = self.scaleX
 			self.worldScaleY = self.scaleY
 			self.worldRotation = self.rotation
