@@ -36,8 +36,9 @@ public class SkeletonComponent : MonoBehaviour {
 	public String initialSkinName;
 	public float timeScale = 1;
 	private Mesh mesh;
+	private int lastVertexCount;
 	private Vector3[] vertices;
-	private Color[] colors;
+	private Color32[] colors;
 	private Vector2[] uvs;
 	private int[] triangles;
 	private float[] vertexPositions = new float[8];
@@ -55,6 +56,9 @@ public class SkeletonComponent : MonoBehaviour {
 		GetComponent<MeshFilter>().mesh = mesh;
 		mesh.name = "Skeleton Mesh";
 		mesh.hideFlags = HideFlags.HideAndDontSave;
+		mesh.MarkDynamic();
+
+		renderer.sharedMaterial = skeletonDataAsset.atlasAsset.material;
 
 		vertices = new Vector3[0];
 
@@ -95,70 +99,75 @@ public class SkeletonComponent : MonoBehaviour {
 		}
 
 		// Ensure mesh data is the right size.
-		if (quadCount > vertices.Length / 4) {
-			vertices = new Vector3[quadCount * 4];
-			colors = new Color[quadCount * 4];
-			uvs = new Vector2[quadCount * 4];
+		Vector3[] vertices = this.vertices;
+		int vertexCount = quadCount * 4;
+		bool newTriangles = vertexCount > vertices.Length;
+		if (newTriangles) {
+			// Not enough vertices, increase size.
+			this.vertices = vertices = new Vector3[vertexCount];
+			colors = new Color32[vertexCount];
+			uvs = new Vector2[vertexCount];
 			triangles = new int[quadCount * 6];
 			mesh.Clear();
 			
 			for (int i = 0, n = quadCount; i < n; i++) {
 				int index = i * 6;
-				int vertexIndex = i * 4;
-				triangles[index] = vertexIndex;
-				triangles[index + 1] = vertexIndex + 2;
-				triangles[index + 2] = vertexIndex + 1;
-				triangles[index + 3] = vertexIndex + 2;
-				triangles[index + 4] = vertexIndex + 3;
-				triangles[index + 5] = vertexIndex + 1;
+				int vertex = i * 4;
+				triangles[index] = vertex;
+				triangles[index + 1] = vertex + 2;
+				triangles[index + 2] = vertex + 1;
+				triangles[index + 3] = vertex + 2;
+				triangles[index + 4] = vertex + 3;
+				triangles[index + 5] = vertex + 1;
 			}
 		} else {
+			// Too many vertices, zero the extra.
 			Vector3 zero = new Vector3(0, 0, 0);
-			for (int i = quadCount * 4, n = vertices.Length; i < n; i++)
+			for (int i = vertexCount, n = lastVertexCount; i < n; i++)
 				vertices[i] = zero;
 		}
+		lastVertexCount = vertexCount;
 
 		// Setup mesh.
 		float[] vertexPositions = this.vertexPositions;
-		int quadIndex = 0;
-		Color color = new Color();
+		int vertexIndex = 0;
+		Color32 color = new Color32();
 		for (int i = 0, n = drawOrder.Count; i < n; i++) {
 			Slot slot = drawOrder[i];
-			Attachment attachment = slot.Attachment;
-			if (attachment is RegionAttachment) {
-				RegionAttachment regionAttachment = (RegionAttachment)attachment;
-				
-				regionAttachment.ComputeVertices(skeleton.X, skeleton.Y, slot.Bone, vertexPositions);
-				int vertexIndex = quadIndex * 4;
-				vertices[vertexIndex] = new Vector3(vertexPositions[RegionAttachment.X1], vertexPositions[RegionAttachment.Y1], 0);
-				vertices[vertexIndex + 1] = new Vector3(vertexPositions[RegionAttachment.X4], vertexPositions[RegionAttachment.Y4], 0);
-				vertices[vertexIndex + 2] = new Vector3(vertexPositions[RegionAttachment.X2], vertexPositions[RegionAttachment.Y2], 0);
-				vertices[vertexIndex + 3] = new Vector3(vertexPositions[RegionAttachment.X3], vertexPositions[RegionAttachment.Y3], 0);
-				
-				color.a = skeleton.A * slot.A;
-				color.r = skeleton.R * slot.R * color.a;
-				color.g = skeleton.G * slot.G * color.a;
-				color.b = skeleton.B * slot.B * color.a;
-				colors[vertexIndex] = color;
-				colors[vertexIndex + 1] = color;
-				colors[vertexIndex + 2] = color;
-				colors[vertexIndex + 3] = color;
+			RegionAttachment regionAttachment = slot.Attachment as RegionAttachment;
+			if (regionAttachment == null) continue;
 
-				float[] regionUVs = regionAttachment.UVs;
-				uvs[vertexIndex] = new Vector2(regionUVs[RegionAttachment.X1], 1 - regionUVs[RegionAttachment.Y1]);
-				uvs[vertexIndex + 1] = new Vector2(regionUVs[RegionAttachment.X4], 1 - regionUVs[RegionAttachment.Y4]);
-				uvs[vertexIndex + 2] = new Vector2(regionUVs[RegionAttachment.X2], 1 - regionUVs[RegionAttachment.Y2]);
-				uvs[vertexIndex + 3] = new Vector2(regionUVs[RegionAttachment.X3], 1 - regionUVs[RegionAttachment.Y3]);
+			regionAttachment.ComputeVertices(skeleton.X, skeleton.Y, slot.Bone, vertexPositions);
+			
+			vertices[vertexIndex] = new Vector3(vertexPositions[RegionAttachment.X1], vertexPositions[RegionAttachment.Y1], 0);
+			vertices[vertexIndex + 1] = new Vector3(vertexPositions[RegionAttachment.X4], vertexPositions[RegionAttachment.Y4], 0);
+			vertices[vertexIndex + 2] = new Vector3(vertexPositions[RegionAttachment.X2], vertexPositions[RegionAttachment.Y2], 0);
+			vertices[vertexIndex + 3] = new Vector3(vertexPositions[RegionAttachment.X3], vertexPositions[RegionAttachment.Y3], 0);
+			
+			color.a = (byte)(skeleton.A * slot.A * 255);
+			color.r = (byte)(skeleton.R * slot.R * color.a);
+			color.g = (byte)(skeleton.G * slot.G * color.a);
+			color.b = (byte)(skeleton.B * slot.B * color.a);
+			colors[vertexIndex] = color;
+			colors[vertexIndex + 1] = color;
+			colors[vertexIndex + 2] = color;
+			colors[vertexIndex + 3] = color;
 
-				quadIndex++;
-			}
+			float[] regionUVs = regionAttachment.UVs;
+			uvs[vertexIndex] = new Vector2(regionUVs[RegionAttachment.X1], 1 - regionUVs[RegionAttachment.Y1]);
+			uvs[vertexIndex + 1] = new Vector2(regionUVs[RegionAttachment.X4], 1 - regionUVs[RegionAttachment.Y4]);
+			uvs[vertexIndex + 2] = new Vector2(regionUVs[RegionAttachment.X2], 1 - regionUVs[RegionAttachment.Y2]);
+			uvs[vertexIndex + 3] = new Vector2(regionUVs[RegionAttachment.X3], 1 - regionUVs[RegionAttachment.Y3]);
+
+			vertexIndex += 4;
 		}
 		mesh.vertices = vertices;
-		mesh.colors = colors;
+		mesh.colors32 = colors;
 		mesh.uv = uvs;
-		mesh.triangles = triangles;
-
-		renderer.sharedMaterial = skeletonDataAsset.atlasAsset.material;
+		if (newTriangles) mesh.triangles = triangles;
+#if UNITY_EDITOR
+		UpdateEditorGizmo();
+#endif
 	}
 
 	public virtual void OnEnable () {
@@ -173,4 +182,30 @@ public class SkeletonComponent : MonoBehaviour {
 	public virtual void Reset () {
 		Update();
 	}
+	
+#region Unity Editor
+#if UNITY_EDITOR
+	Vector3 gizmosCenter = new Vector3();
+	Vector3 gizmosSize = new Vector3();
+	Vector3 min = new Vector3(float.MaxValue, float.MaxValue, 0f);
+	Vector3 max = new Vector3(float.MinValue, float.MinValue, 0f);
+
+	void UpdateEditorGizmo() {
+		//determine the minimums and maximums
+		foreach (Vector3 vert in vertices) {
+			min = Vector3.Min(min, vert);
+			max = Vector3.Max(max, vert);
+		}
+		float width = max.x - min.x;
+		float height = max.y - min.y;
+		gizmosCenter = new Vector3(min.x + (width / 2f), min.y + (height / 2f), 0f);
+		gizmosSize = new Vector3(width, height, 1f);
+	}
+	void OnDrawGizmos() {
+		Gizmos.color = Color.clear;
+		Gizmos.matrix = transform.localToWorldMatrix;
+		Gizmos.DrawCube(gizmosCenter, gizmosSize);
+	}
+#endif
+#endregion
 }

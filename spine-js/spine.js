@@ -455,7 +455,7 @@ spine.AttachmentTimeline = function (frameCount) {
 spine.AttachmentTimeline.prototype = {
 	slotIndex: 0,
 	getFrameCount: function () {
-		return this.frames.length / 2;
+		return this.frames.length;
 	},
 	setFrame: function (frameIndex, time, attachmentName) {
 		this.frames[frameIndex] = time;
@@ -750,6 +750,7 @@ spine.AnimationStateData = function (skeletonData) {
 	this.animationToMixTime = {};
 };
 spine.AnimationStateData.prototype = {
+	defaultMix: 0,
 	setMixByName: function (fromName, toName, duration) {
 		var from = this.skeletonData.findAnimation(fromName);
 		if (!from) throw "Animation not found: " + fromName;
@@ -762,7 +763,7 @@ spine.AnimationStateData.prototype = {
 	},
 	getMix: function (from, to) {
 		var time = this.animationToMixTime[from.name + ":" + to.name];
-		return time ? time : 0;
+		return time ? time : this.defaultMix;
 	}
 };
 
