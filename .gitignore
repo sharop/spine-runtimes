@@ -3,8 +3,6 @@ spine-cpp/Debug/*
 spine-sfml/Debug/*
 spine-libgdx/bin/*
 spine-libgdx/libs/*
-spine-csharp-xamarin-ios/bin/*
-spine-xna-xamarin-ios/bin/*
 target
 
 *Debug.win32
