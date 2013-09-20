@@ -1,15 +1,23 @@
-/*******************************************************************************
+/******************************************************************************
+ * Spine Runtime Software License - Version 1.0
+ * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
  * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms in whole or in part, with
+ * or without modification, are permitted provided that the following conditions
+ * are met:
  * 
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * 1. A Spine Single User License or Spine Professional License must be
+ *    purchased from Esoteric Software and the license must remain valid:
+ *    http://esotericsoftware.com/
+ * 2. Redistributions of source code must retain this license, which is the
+ *    above copyright notice, this declaration of conditions and the following
+ *    disclaimer.
+ * 3. Redistributions in binary form must reproduce this license, which is the
+ *    above copyright notice, this declaration of conditions and the following
+ *    disclaimer, in the documentation and/or other materials provided with the
+ *    distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -21,7 +29,7 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- ******************************************************************************/
+ *****************************************************************************/
 
 using System;
 using System.IO;
@@ -40,9 +48,13 @@ namespace Spine {
 		GraphicsDeviceManager graphics;
 		SkeletonRenderer skeletonRenderer;
 		Skeleton skeleton;
+		Slot headSlot;
 		AnimationState state;
+		SkeletonBounds bounds = new SkeletonBounds();
 
 		public Example () {
+			IsMouseVisible = true;
+
 			graphics = new GraphicsDeviceManager(this);
 			graphics.IsFullScreen = false;
 			graphics.PreferredBackBufferWidth = 640;
@@ -74,13 +86,19 @@ namespace Spine {
 			}
 
 			state = new AnimationState(stateData);
-			state.SetAnimation("walk", false);
-			state.AddAnimation("jump", false);
-			state.AddAnimation("walk", true);
+			if (true) {
+				state.SetAnimation("drawOrder", true);
+			} else {
+				state.SetAnimation("walk", false);
+				state.AddAnimation("jump", false);
+				state.AddAnimation("walk", true);
+			}
 
 			skeleton.X = 320;
 			skeleton.Y = 440;
 			skeleton.UpdateWorldTransform();
+
+			headSlot = skeleton.FindSlot("head");
 		}
 
 		protected override void UnloadContent () {
@@ -106,6 +124,19 @@ namespace Spine {
 			skeletonRenderer.Begin();
 			skeletonRenderer.Draw(skeleton);
 			skeletonRenderer.End();
+
+			bounds.Update(skeleton);
+			MouseState mouse = Mouse.GetState();
+			if (bounds.AabbContainsPoint(mouse.X, mouse.Y)) {
+				BoundingBoxAttachment hit = bounds.ContainsPoint(mouse.X, mouse.Y);
+				if (hit != null) {
+					headSlot.G = 0;
+					headSlot.B = 0;
+				} else {
+					headSlot.G = 1;
+					headSlot.B = 1;
+				}
+			}
 
 			base.Draw(gameTime);
 		}

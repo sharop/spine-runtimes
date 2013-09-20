@@ -1,15 +1,23 @@
-/*******************************************************************************
+/******************************************************************************
+ * Spine Runtime Software License - Version 1.0
+ * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
  * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms in whole or in part, with
+ * or without modification, are permitted provided that the following conditions
+ * are met:
  * 
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * 1. A Spine Single User License or Spine Professional License must be
+ *    purchased from Esoteric Software and the license must remain valid:
+ *    http://esotericsoftware.com/
+ * 2. Redistributions of source code must retain this license, which is the
+ *    above copyright notice, this declaration of conditions and the following
+ *    disclaimer.
+ * 3. Redistributions in binary form must reproduce this license, which is the
+ *    above copyright notice, this declaration of conditions and the following
+ *    disclaimer, in the documentation and/or other materials provided with the
+ *    distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -21,7 +29,7 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- ******************************************************************************/
+ *****************************************************************************/
 
 using System;
 using System.IO;
@@ -33,7 +41,7 @@ using Windows.Storage;
 #endif
 
 namespace Spine {
-    public class SkeletonJson {
+	public class SkeletonJson {
 		static public String TIMELINE_SCALE = "scale";
 		static public String TIMELINE_ROTATE = "rotate";
 		static public String TIMELINE_TRANSLATE = "translate";
@@ -46,7 +54,8 @@ namespace Spine {
 		private AttachmentLoader attachmentLoader;
 		public float Scale { get; set; }
 
-		public SkeletonJson (Atlas atlas) : this(new AtlasAttachmentLoader(atlas)) {
+		public SkeletonJson (Atlas atlas)
+			: this(new AtlasAttachmentLoader(atlas)) {
 		}
 
 		public SkeletonJson (AttachmentLoader attachmentLoader) {
@@ -102,15 +111,15 @@ namespace Spine {
 				boneData.Rotation = GetFloat(boneMap, "rotation", 0);
 				boneData.ScaleX = GetFloat(boneMap, "scaleX", 1);
 				boneData.ScaleY = GetFloat(boneMap, "scaleY", 1);
-				boneData.InheritScale = GetBoolean (boneMap, "inheritScale", true);
-				boneData.InheritRotation = GetBoolean (boneMap, "inheritRotation", true);
+				boneData.InheritScale = GetBoolean(boneMap, "inheritScale", true);
+				boneData.InheritRotation = GetBoolean(boneMap, "inheritRotation", true);
 				skeletonData.AddBone(boneData);
 			}
 
 			// Slots.
 			if (root.ContainsKey("slots")) {
 				var slots = (List<Object>)root["slots"];
-				foreach (Dictionary<String, Object> slotMap in (List<Object>)slots) {
+				foreach (Dictionary<String, Object> slotMap in slots) {
 					String slotName = (String)slotMap["name"];
 					String boneName = (String)slotMap["bone"];
 					BoneData boneData = skeletonData.FindBone(boneName);
@@ -129,6 +138,9 @@ namespace Spine {
 					if (slotMap.ContainsKey("attachment"))
 						slotData.AttachmentName = (String)slotMap["attachment"];
 
+					if (slotMap.ContainsKey("additive"))
+						slotData.AdditiveBlending = (bool)slotMap["additive"];
+
 					skeletonData.AddSlot(slotData);
 				}
 			}
@@ -142,7 +154,7 @@ namespace Spine {
 						int slotIndex = skeletonData.FindSlotIndex(slotEntry.Key);
 						foreach (KeyValuePair<String, Object> attachmentEntry in ((Dictionary<String, Object>)slotEntry.Value)) {
 							Attachment attachment = ReadAttachment(skin, attachmentEntry.Key, (Dictionary<String, Object>)attachmentEntry.Value);
-							skin.AddAttachment(slotIndex, attachmentEntry.Key, attachment);
+							if (attachment != null) skin.AddAttachment(slotIndex, attachmentEntry.Key, attachment);
 						}
 					}
 					skeletonData.AddSkin(skin);
@@ -175,8 +187,8 @@ namespace Spine {
 				type = (AttachmentType)Enum.Parse(typeof(AttachmentType), (String)map["type"], false);
 			Attachment attachment = attachmentLoader.NewAttachment(skin, type, name);
 
-			if (attachment is RegionAttachment) {
-				RegionAttachment regionAttachment = (RegionAttachment)attachment;
+			RegionAttachment regionAttachment = attachment as RegionAttachment;
+			if (regionAttachment != null) {
 				regionAttachment.X = GetFloat(map, "x", 0) * Scale;
 				regionAttachment.Y = GetFloat(map, "y", 0) * Scale;
 				regionAttachment.ScaleX = GetFloat(map, "scaleX", 1);
@@ -187,6 +199,15 @@ namespace Spine {
 				regionAttachment.UpdateOffset();
 			}
 
+			BoundingBoxAttachment boundingBox = attachment as BoundingBoxAttachment;
+			if (boundingBox != null) {
+				List<Object> values = (List<Object>)map["vertices"];
+				float[] vertices = new float[values.Count];
+				for (int i = 0, n = values.Count; i < n; i++)
+					vertices[i] = (float)values[i];
+				boundingBox.Vertices = vertices;
+			}
+
 			return attachment;
 		}
 
@@ -195,7 +216,7 @@ namespace Spine {
 				return (float)defaultValue;
 			return (float)map[name];
 		}
-		
+
 		private bool GetBoolean (Dictionary<String, Object> map, String name, bool defaultValue) {
 			if (!map.ContainsKey(name))
 				return (bool)defaultValue;
@@ -308,6 +329,39 @@ namespace Spine {
 							throw new Exception("Invalid timeline type for a slot: " + timelineName + " (" + slotName + ")");
 					}
 				}
+			}
+
+			if (map.ContainsKey("draworder")) {
+				var values = (List<Object>)map["draworder"];
+				DrawOrderTimeline timeline = new DrawOrderTimeline(values.Count);
+				int slotCount = skeletonData.Slots.Count;
+				int frameIndex = 0;
+				foreach (Dictionary<String, Object> drawOrderMap in values) {
+					int[] drawOrder = new int[slotCount];
+					for (int i = slotCount - 1; i >= 0; i--)
+						drawOrder[i] = -1;
+					List<Object> offsets = (List<Object>)drawOrderMap["offsets"];
+					int[] unchanged = new int[slotCount - offsets.Count];
+					int originalIndex = 0, unchangedIndex = 0;
+					foreach (Dictionary<String, Object> offsetMap in offsets) {
+						int slotIndex = skeletonData.FindSlotIndex((String)offsetMap["slot"]);
+						if (slotIndex == -1) throw new Exception("Slot not found: " + offsetMap["slot"]);
+						// Collect unchanged items.
+						while (originalIndex != slotIndex)
+							unchanged[unchangedIndex++] = originalIndex++;
+						// Set changed items.
+						drawOrder[originalIndex + (int)(float)offsetMap["offset"]] = originalIndex++;
+					}
+					// Collect remaining unchanged items.
+					while (originalIndex < slotCount)
+						unchanged[unchangedIndex++] = originalIndex++;
+					// Fill in unchanged items.
+					for (int i = slotCount - 1; i >= 0; i--)
+						if (drawOrder[i] == -1) drawOrder[i] = unchanged[--unchangedIndex];
+					timeline.setFrame(frameIndex++, (float)drawOrderMap["time"], drawOrder);
+				}
+				timelines.Add(timeline);
+				duration = Math.Max(duration, timeline.Frames[timeline.FrameCount - 1]);
 			}
 
 			timelines.TrimExcess();

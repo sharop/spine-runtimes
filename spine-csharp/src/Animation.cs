@@ -1,15 +1,23 @@
-/*******************************************************************************
+/******************************************************************************
+ * Spine Runtime Software License - Version 1.0
+ * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
  * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms in whole or in part, with
+ * or without modification, are permitted provided that the following conditions
+ * are met:
  * 
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * 1. A Spine Single User License or Spine Professional License must be
+ *    purchased from Esoteric Software and the license must remain valid:
+ *    http://esotericsoftware.com/
+ * 2. Redistributions of source code must retain this license, which is the
+ *    above copyright notice, this declaration of conditions and the following
+ *    disclaimer.
+ * 3. Redistributions in binary form must reproduce this license, which is the
+ *    above copyright notice, this declaration of conditions and the following
+ *    disclaimer, in the documentation and/or other materials provided with the
+ *    distribution.
  * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -21,7 +29,7 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- ******************************************************************************/
+ *****************************************************************************/
 
 using System;
 using System.Collections.Generic;
@@ -410,6 +418,44 @@ namespace Spine {
 			String attachmentName = AttachmentNames[frameIndex];
 			skeleton.Slots[SlotIndex].Attachment =
 				 attachmentName == null ? null : skeleton.GetAttachment(SlotIndex, attachmentName);
+		}
+	}
+
+	public class DrawOrderTimeline : Timeline {
+		public float[] Frames { get; private set; } // time, ...
+		public int[][] DrawOrders { get; private set; }
+		public int FrameCount {
+			get {
+				return Frames.Length;
+			}
+		}
+
+		public DrawOrderTimeline (int frameCount) {
+			Frames = new float[frameCount];
+			DrawOrders = new int[frameCount][];
+		}
+
+		/** Sets the time and value of the specified keyframe. */
+		public void setFrame (int frameIndex, float time, int[] drawOrder) {
+			Frames[frameIndex] = time;
+			DrawOrders[frameIndex] = drawOrder;
+		}
+
+		public void Apply (Skeleton skeleton, float time, float alpha) {
+			float[] frames = Frames;
+			if (time < frames[0]) return; // Time is before first frame.
+
+			int frameIndex;
+			if (time >= frames[frames.Length - 1]) // Time is after last frame.
+				frameIndex = frames.Length - 1;
+			else
+				frameIndex = Animation.binarySearch(frames, time, 1) - 1;
+
+			List<Slot> drawOrder = skeleton.DrawOrder;
+			List<Slot> slots = skeleton.Slots;
+			int[] drawOrderToSetupIndex = DrawOrders[frameIndex];
+			for (int i = 0, n = drawOrderToSetupIndex.Length; i < n; i++)
+				drawOrder[i] = slots[drawOrderToSetupIndex[i]];
 		}
 	}
 }
