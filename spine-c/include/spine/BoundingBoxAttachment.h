@@ -31,29 +31,29 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-using UnityEngine;
-using System.Collections;
-using Spine;
+#ifndef SPINE_BOUNDINGBOXATTACHMENT_H_
+#define SPINE_BOUNDINGBOXATTACHMENT_H_
 
-public class Spineboy : MonoBehaviour {
-	private SkeletonAnimation skeleton;
-	
-	void Start() {
-		skeleton = GetComponent<SkeletonAnimation>();
-	}
-	
-	void LateUpdate() {
-		if (skeleton.loop) return;
-		
-		TrackEntry entry = skeleton.state.GetCurrent(0);
-		if (entry != null && entry.Time >= entry.Animation.Duration - 0.25) {
-			skeleton.animationName = "walk";
-			skeleton.loop = true;
-		}
-	}
-	
-	void OnMouseDown() {
-		skeleton.animationName = "jump";
-		skeleton.loop = false;
-	}
+#include <spine/Attachment.h>
+#include <spine/Atlas.h>
+#include <spine/Slot.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct BoundingBoxAttachment BoundingBoxAttachment;
+struct BoundingBoxAttachment {
+	Attachment super;
+	int verticesCount;
+	float* vertices;
+};
+
+BoundingBoxAttachment* BoundingBoxAttachment_create (const char* name);
+void BoundingBoxAttachment_computeWorldVertices (BoundingBoxAttachment* self, float x, float y, Bone* bone, float* vertices);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif /* SPINE_BOUNDINGBOXATTACHMENT_H_ */

@@ -61,6 +61,8 @@ public class AtlasAttachmentLoader implements AttachmentLoader {
 			attachment.regionOriginalWidth = region.originalWidth;
 			attachment.regionOriginalHeight = region.originalHeight;
 			return attachment;
+		case AttachmentType.boundingbox:
+			return new BoundingBoxAttachment(name);
 		}
 		throw new Error("Unknown attachment type: " + type);
 	}

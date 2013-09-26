@@ -307,10 +307,7 @@
 					{ "slot": "eyes", "offset": -12 }
 				]
 			},
-			{
-				"time": 3.5862,
-				"offsets": []
-			}
+			{ "time": 3.5862 }
 		]
 	},
 	"jump": {
@@ -997,6 +994,11 @@
 					{ "time": 0.8, "angle": 6.09 },
 					{ "time": 0.9333, "angle": 2.28 },
 					{ "time": 1.0666, "angle": 3.6 }
+				]
+			},
+			"root": {
+				"rotate": [
+					{ "time": 0, "angle": 0 }
 				]
 			}
 		}

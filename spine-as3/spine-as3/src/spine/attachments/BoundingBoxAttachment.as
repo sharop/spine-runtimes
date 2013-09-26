@@ -31,29 +31,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *****************************************************************************/
 
-using UnityEngine;
-using System.Collections;
-using Spine;
+package spine.attachments {
+import spine.Bone;
 
-public class Spineboy : MonoBehaviour {
-	private SkeletonAnimation skeleton;
-	
-	void Start() {
-		skeleton = GetComponent<SkeletonAnimation>();
+public dynamic class BoundingBoxAttachment extends Attachment {
+	public var vertices:Vector.<Number> = new Vector.<Number>();
+
+	public function BoundingBoxAttachment (name:String) {
+		super(name);
 	}
 	
-	void LateUpdate() {
-		if (skeleton.loop) return;
-		
-		TrackEntry entry = skeleton.state.GetCurrent(0);
-		if (entry != null && entry.Time >= entry.Animation.Duration - 0.25) {
-			skeleton.animationName = "walk";
-			skeleton.loop = true;
+	public function computeWorldVertices (x:Number, y:Number, bone:Bone, worldVertices:Vector.<Number>) : void {
+		x += bone.worldX;
+		y += bone.worldY;
+		var m00:Number = bone.m00;
+		var m01:Number = bone.m01;
+		var m10:Number = bone.m10;
+		var m11:Number = bone.m11;
+		var vertices:Vector.<Number> = this.vertices;
+		for (var i:int = 0, n:int = vertices.length; i < n; i += 2) {
+			var px:Number = vertices[i];
+			var py:Number = vertices[i + 1];
+			worldVertices[i] = px * m00 + py * m01 + x;
+			worldVertices[i + 1] = px * m10 + py * m11 + y;
 		}
 	}
-	
-	void OnMouseDown() {
-		skeleton.animationName = "jump";
-		skeleton.loop = false;
-	}
+}
+
 }

@@ -32,7 +32,6 @@
  *****************************************************************************/
 
 #include <spine/RegionAttachment.h>
-#include <math.h>
 #include <spine/extension.h>
 
 RegionAttachment* RegionAttachment_create (const char* name) {
@@ -98,7 +97,7 @@ void RegionAttachment_updateOffset (RegionAttachment* self) {
 	self->offset[VERTEX_Y4] = localYCos + localX2Sin;
 }
 
-void RegionAttachment_computeVertices (RegionAttachment* self, float x, float y, Bone* bone, float* vertices) {
+void RegionAttachment_computeWorldVertices (RegionAttachment* self, float x, float y, Bone* bone, float* vertices) {
 	float* offset = self->offset;
 	x += bone->worldX;
 	y += bone->worldY;

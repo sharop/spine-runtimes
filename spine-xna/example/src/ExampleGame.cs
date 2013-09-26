@@ -69,6 +69,7 @@ namespace Spine {
 
 		protected override void LoadContent () {
 			skeletonRenderer = new SkeletonRenderer(GraphicsDevice);
+			skeletonRenderer.PremultipliedAlpha = true;
 
 			String name = "spineboy"; // "goblins";
 
@@ -89,17 +90,17 @@ namespace Spine {
 
 			if (true) {
 				// Event handling for all animations.
-				state.Start += new EventHandler(Start);
-				state.End += new EventHandler(End);
+				state.Start += new EventHandler<StartEndArgs>(Start);
+				state.End += new EventHandler<StartEndArgs>(End);
 				state.Complete += new EventHandler<CompleteArgs>(Complete);
 				state.Event += new EventHandler<EventTriggeredArgs>(Event);
 
-				state.SetAnimation("drawOrder", true);
+				state.SetAnimation(0, "drawOrder", true);
 			} else {
-				state.SetAnimation("walk", false);
-				QueueEntry entry = state.AddAnimation("jump", false);
-				entry.End += new EventHandler(End); // Event handling for queued animations.
-				state.AddAnimation("walk", true);
+				state.SetAnimation(0, "walk", false);
+				TrackEntry entry = state.AddAnimation(0, "jump", false, 0);
+				entry.End += new EventHandler<StartEndArgs>(End); // Event handling for queued animations.
+				state.AddAnimation(0, "walk", true, 0);
 			}
 
 			skeleton.X = 320;
@@ -133,7 +134,7 @@ namespace Spine {
 			skeletonRenderer.Draw(skeleton);
 			skeletonRenderer.End();
 
-			bounds.Update(skeleton);
+			bounds.Update(skeleton, true);
 			MouseState mouse = Mouse.GetState();
 			headSlot.G = 1;
 			headSlot.B = 1;
@@ -148,20 +149,20 @@ namespace Spine {
 			base.Draw(gameTime);
 		}
 
-		public void Start (object sender, EventArgs e) {
-			Console.WriteLine(state + ": start");
+		public void Start (object sender, StartEndArgs e) {
+			Console.WriteLine(e.TrackIndex + " " + state.GetCurrent(e.TrackIndex) + ": start");
 		}
 
-		public void End (object sender, EventArgs e) {
-			Console.WriteLine(state + ": end");
+		public void End (object sender, StartEndArgs e) {
+			Console.WriteLine(e.TrackIndex + " " + state.GetCurrent(e.TrackIndex) + ": end");
 		}
 
 		public void Complete (object sender, CompleteArgs e) {
-			Console.WriteLine(state + ": complete " + e.LoopCount);
+			Console.WriteLine(e.TrackIndex + " " + state.GetCurrent(e.TrackIndex) + ": complete " + e.LoopCount);
 		}
 
 		public void Event (object sender, EventTriggeredArgs e) {
-			Console.WriteLine(state + ": event " + e.Event);
+			Console.WriteLine(e.TrackIndex + " " + state.GetCurrent(e.TrackIndex) + ": event " + e.Event);
 		}
 	}
 }
