@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -54,8 +54,16 @@ typedef struct {
 Animation* Animation_create (const char* name, int timelineCount);
 void Animation_dispose (Animation* self);
 
+/** Poses the skeleton at the specified time for this animation.
+ * @param lastTime The last time the animation was applied.
+ * @param events Any triggered events are added. */
 void Animation_apply (const Animation* self, struct Skeleton* skeleton, float lastTime, float time, int loop,
 		Event** events, int* eventCount);
+
+/** Poses the skeleton at the specified time for this animation mixed with the current pose.
+ * @param lastTime The last time the animation was applied.
+ * @param events Any triggered events are added.
+ * @param alpha The amount of this animation that affects the current pose. */
 void Animation_mix (const Animation* self, struct Skeleton* skeleton, float lastTime, float time, int loop, Event** events,
 		int* eventCount, float alpha);
 

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -197,12 +197,12 @@ public class SkeletonJson {
 
 		} else if (attachment instanceof BoundingBoxAttachment) {
 			BoundingBoxAttachment box = (BoundingBoxAttachment)attachment;
-			JsonValue pointsArray = map.require("vertices");
-			float[] points = new float[pointsArray.size];
+			JsonValue verticesArray = map.require("vertices");
+			float[] vertices = new float[verticesArray.size];
 			int i = 0;
-			for (JsonValue point = pointsArray.child; point != null; point = point.next())
-				points[i++] = point.asFloat();
-			box.setVertices(points);
+			for (JsonValue point = verticesArray.child; point != null; point = point.next())
+				vertices[i++] = point.asFloat() * scale;
+			box.setVertices(vertices);
 		}
 
 		return attachment;

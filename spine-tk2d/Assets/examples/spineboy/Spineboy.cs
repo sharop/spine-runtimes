@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -34,26 +34,22 @@
 using UnityEngine;
 using System.Collections;
 using Spine;
+using System;
 
 public class Spineboy : MonoBehaviour {
 	private SkeletonAnimation skeleton;
 	
 	void Start() {
 		skeleton = GetComponent<SkeletonAnimation>();
+		skeleton.state.Event += new EventHandler<EventTriggeredArgs>(Event);
 	}
 	
-	void LateUpdate() {
-		if (skeleton.loop) return;
-		
-		TrackEntry entry = skeleton.state.GetCurrent(0);
-		if (entry != null && entry.Time >= entry.Animation.Duration - 0.25) {
-			skeleton.animationName = "walk";
-			skeleton.loop = true;
-		}
+	public void Event (object sender, EventTriggeredArgs e) {
+		Debug.Log(e.TrackIndex + " " + skeleton.state.GetCurrent(e.TrackIndex) + ": event " + e.Event + ", " + e.Event.Int);
 	}
-	
+
 	void OnMouseDown() {
-		skeleton.animationName = "jump";
-		skeleton.loop = false;
+		skeleton.state.SetAnimation(0, "jump", false);
+		skeleton.state.AddAnimation(0, "walk", true, 0);
 	}
 }

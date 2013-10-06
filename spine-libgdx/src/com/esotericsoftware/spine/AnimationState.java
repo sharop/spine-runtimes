@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -43,6 +43,7 @@ public class AnimationState {
 	private Array<TrackEntry> tracks = new Array();
 	private final Array<Event> events = new Array();
 	private final Array<AnimationStateListener> listeners = new Array();
+	private float timeScale = 1;
 
 	public AnimationState (AnimationStateData data) {
 		if (data == null) throw new IllegalArgumentException("data cannot be null.");
@@ -50,17 +51,19 @@ public class AnimationState {
 	}
 
 	public void update (float delta) {
+		delta *= timeScale;
 		for (int i = 0, n = tracks.size; i < n; i++) {
 			TrackEntry current = tracks.get(i);
 			if (current == null) continue;
 
-			float time = current.time + delta;
+			float trackDelta = delta * current.timeScale;
+			float time = current.time + trackDelta;
 			float endTime = current.endTime;
 
 			current.time = time;
 			if (current.previous != null) {
-				current.previous.time += delta;
-				current.mixTime += delta;
+				current.previous.time += trackDelta;
+				current.mixTime += trackDelta;
 			}
 
 			// Check if completed the animation or a loop iteration.
@@ -72,11 +75,11 @@ public class AnimationState {
 			}
 
 			TrackEntry next = current.next;
-			if (next != null && time >= next.delay) {
-				if (next.animation != null)
-					setCurrent(i, next);
-				else
-					clear(i);
+			if (next != null) {
+				if (time - trackDelta > next.delay) setCurrent(i, next);
+			} else {
+				// End non-looping animation when it reaches its end time and there is no next entry.
+				if (!current.loop && current.lastTime >= current.endTime) clearTrack(i);
 			}
 		}
 	}
@@ -91,18 +94,25 @@ public class AnimationState {
 
 			events.size = 0;
 
+			float time = current.time;
+			boolean loop = current.loop;
+			if (!loop && time > current.endTime) time = current.endTime;
+
 			TrackEntry previous = current.previous;
 			if (previous == null)
-				current.animation.apply(skeleton, current.lastTime, current.time, current.loop, events);
+				current.animation.apply(skeleton, current.lastTime, time, loop, events);
 			else {
-				previous.animation.apply(skeleton, Integer.MAX_VALUE, previous.time, previous.loop, null);
+				float previousTime = previous.time;
+				if (!previous.loop && previousTime > previous.endTime) previousTime = previous.endTime;
+				previous.animation.apply(skeleton, previousTime, previousTime, previous.loop, null);
+
 				float alpha = current.mixTime / current.mixDuration;
 				if (alpha >= 1) {
 					alpha = 1;
 					Pools.free(previous);
 					current.previous = null;
 				}
-				current.animation.mix(skeleton, current.lastTime, current.time, current.loop, events, alpha);
+				current.animation.mix(skeleton, current.lastTime, time, loop, events, alpha);
 			}
 
 			for (int ii = 0, nn = events.size; ii < nn; ii++) {
@@ -116,13 +126,13 @@ public class AnimationState {
 		}
 	}
 
-	public void clear () {
+	public void clearTracks () {
 		for (int i = 0, n = tracks.size; i < n; i++)
-			clear(i);
+			clearTrack(i);
 		tracks.clear();
 	}
 
-	public void clear (int trackIndex) {
+	public void clearTrack (int trackIndex) {
 		if (trackIndex >= tracks.size) return;
 		TrackEntry current = tracks.get(trackIndex);
 		if (current == null) return;
@@ -193,7 +203,6 @@ public class AnimationState {
 		TrackEntry entry = Pools.obtain(TrackEntry.class);
 		entry.animation = animation;
 		entry.loop = loop;
-		entry.time = 0;
 		entry.endTime = animation.getDuration();
 		setCurrent(trackIndex, entry);
 		return entry;
@@ -207,14 +216,12 @@ public class AnimationState {
 	}
 
 	/** Adds an animation to be played delay seconds after the current or last queued animation.
-	 * @param animation May be null to queue clearing the AnimationState.
 	 * @param delay May be <= 0 to use duration of previous animation minus any mix duration plus the negative delay. */
 	public TrackEntry addAnimation (int trackIndex, Animation animation, boolean loop, float delay) {
 		TrackEntry entry = Pools.obtain(TrackEntry.class);
 		entry.animation = animation;
 		entry.loop = loop;
-		entry.time = 0;
-		entry.endTime = animation != null ? animation.getDuration() : 0;
+		entry.endTime = animation.getDuration();
 
 		TrackEntry last = expandToIndex(trackIndex);
 		if (last != null) {
@@ -225,10 +232,9 @@ public class AnimationState {
 			tracks.set(trackIndex, entry);
 
 		if (delay <= 0) {
-			if (last != null) {
-				delay += last.endTime;
-				if (animation != null) delay -= data.getMix(last.animation, animation);
-			} else
+			if (last != null)
+				delay += last.endTime - data.getMix(last.animation, animation);
+			else
 				delay = 0;
 		}
 		entry.delay = delay;
@@ -253,6 +259,14 @@ public class AnimationState {
 		listeners.removeValue(listener, true);
 	}
 
+	public float getTimeScale () {
+		return timeScale;
+	}
+
+	public void setTimeScale (float timeScale) {
+		this.timeScale = timeScale;
+	}
+
 	public AnimationStateData getData () {
 		return data;
 	}
@@ -273,14 +287,18 @@ public class AnimationState {
 		TrackEntry next, previous;
 		Animation animation;
 		boolean loop;
-		float delay, time, lastTime, endTime;
-		AnimationStateListener listener;
+		float delay, time, lastTime, endTime, timeScale = 1;
 		float mixTime, mixDuration;
+		AnimationStateListener listener;
 
 		public void reset () {
+			next = null;
+			previous = null;
 			animation = null;
 			listener = null;
-			next = null;
+			timeScale = 1;
+			lastTime = 0;
+			time = 0;
 		}
 
 		public Animation getAnimation () {
@@ -337,6 +355,14 @@ public class AnimationState {
 
 		public void setLastTime (float lastTime) {
 			this.lastTime = lastTime;
+		}
+
+		public float getTimeScale () {
+			return timeScale;
+		}
+
+		public void setTimeScale (float timeScale) {
+			this.timeScale = timeScale;
 		}
 
 		public TrackEntry getNext () {

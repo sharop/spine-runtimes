@@ -8,8 +8,8 @@
  -- or without modification, are permitted provided that the following conditions
  -- are met:
  -- 
- -- 1. A Spine Single User License or Spine Professional License must be
- --    purchased from Esoteric Software and the license must remain valid:
+ -- 1. A Spine Essential, Professional, Enterprise, or Education License must
+ --    be purchased from Esoteric Software and the license must remain valid:
  --    http://esotericsoftware.com/
  -- 2. Redistributions of source code must retain this license, which is the
  --    above copyright notice, this declaration of conditions and the following
@@ -110,6 +110,11 @@ function spine.Skeleton.new (skeletonData, group)
 						rotation = -rotation
 					end
 					love.graphics.setColor(self.r * slot.r, self.g * slot.g, self.b * slot.b, self.a * slot.a)
+					if slot.data.additiveBlending then
+						love.graphics.setBlendMode("additive")
+					else
+						love.graphics.setBlendMode("alpha")
+					end
 					love.graphics.draw(image, 
 						self.x + x, 
 						self.y - y, 

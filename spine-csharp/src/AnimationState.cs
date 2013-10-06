@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -40,8 +40,10 @@ namespace Spine {
 		private AnimationStateData data;
 		private List<TrackEntry> tracks = new List<TrackEntry>();
 		private List<Event> events = new List<Event>();
+		private float timeScale = 1;
 
 		public AnimationStateData Data { get { return data; } }
+		public float TimeScale { get { return timeScale; } set { timeScale = value; } }
 
 		public event EventHandler<StartEndArgs> Start;
 		public event EventHandler<StartEndArgs> End;
@@ -54,17 +56,19 @@ namespace Spine {
 		}
 
 		public void Update (float delta) {
+			delta *= timeScale;
 			for (int i = 0, n = tracks.Count; i < n; i++) {
 				TrackEntry current = tracks[i];
 				if (current == null) continue;
 
-				float time = current.time + delta;
+				float trackDelta = delta * current.timeScale;
+				float time = current.time + trackDelta;
 				float endTime = current.endTime;
 
 				current.time = time;
 				if (current.previous != null) {
-					current.previous.time += delta;
-					current.mixTime += delta;
+					current.previous.time += trackDelta;
+					current.mixTime += trackDelta;
 				}
 
 				// Check if completed the animation or a loop iteration.
@@ -75,11 +79,11 @@ namespace Spine {
 				}
 
 				TrackEntry next = current.next;
-				if (next != null && time >= next.delay) {
-					if (next.animation != null)
-						SetCurrent(i, next);
-					else
-						Clear(i);
+				if (next != null) {
+					if (time - trackDelta >= next.delay) SetCurrent(i, next);
+				} else {
+					// End non-looping animation when it reaches its end time and there is no next entry.
+					if (!current.loop && current.lastTime >= current.endTime) ClearTrack(i);
 				}
 			}
 		}
@@ -93,17 +97,24 @@ namespace Spine {
 
 				events.Clear();
 
+				float time = current.time;
+				bool loop = current.loop;
+				if (!loop && time > current.endTime) time = current.endTime;
+
 				TrackEntry previous = current.previous;
 				if (previous == null)
-					current.animation.Apply(skeleton, current.lastTime, current.time, current.loop, events);
+					current.animation.Apply(skeleton, current.lastTime, time, loop, events);
 				else {
-					previous.animation.Apply(skeleton, int.MaxValue, previous.time, previous.loop, null);
+					float previousTime = previous.time;
+					if (!previous.loop && previousTime > previous.endTime) previousTime = previous.endTime;
+					previous.animation.Apply(skeleton, previousTime, previousTime, previous.loop, null);
+
 					float alpha = current.mixTime / current.mixDuration;
 					if (alpha >= 1) {
 						alpha = 1;
 						current.previous = null;
 					}
-					current.animation.Mix(skeleton, current.lastTime, current.time, current.loop, events, alpha);
+					current.animation.Mix(skeleton, current.lastTime, time, loop, events, alpha);
 				}
 
 				for (int ii = 0, nn = events.Count; ii < nn; ii++) {
@@ -116,13 +127,13 @@ namespace Spine {
 			}
 		}
 
-		public void Clear () {
+		public void ClearTracks () {
 			for (int i = 0, n = tracks.Count; i < n; i++)
-				Clear(i);
+				ClearTrack(i);
 			tracks.Clear();
 		}
 
-		public void Clear (int trackIndex) {
+		public void ClearTrack (int trackIndex) {
 			if (trackIndex >= tracks.Count) return;
 			TrackEntry current = tracks[trackIndex];
 			if (current == null) return;
@@ -167,7 +178,7 @@ namespace Spine {
 			return SetAnimation(trackIndex, animation, loop);
 		}
 
-		/** Set the current animation. Any queued animations are cleared. */
+		/// <summary>Set the current animation. Any queued animations are cleared.</summary>
 		public TrackEntry SetAnimation (int trackIndex, Animation animation, bool loop) {
 			TrackEntry entry = new TrackEntry();
 			entry.animation = animation;
@@ -184,14 +195,14 @@ namespace Spine {
 			return AddAnimation(trackIndex, animation, loop, delay);
 		}
 
-		/** Adds an animation to be played delay seconds after the current or last queued animation.
-		 * @param delay May be <= 0 to use duration of previous animation minus any mix duration plus the negative delay. */
+		/// <summary>Adds an animation to be played delay seconds after the current or last queued animation.</summary>
+		/// <param name="delay">May be <= 0 to use duration of previous animation minus any mix duration plus the negative delay.</param>
 		public TrackEntry AddAnimation (int trackIndex, Animation animation, bool loop, float delay) {
 			TrackEntry entry = new TrackEntry();
 			entry.animation = animation;
 			entry.loop = loop;
 			entry.time = 0;
-			entry.endTime = animation != null ? animation.Duration : 0;
+			entry.endTime = animation.Duration;
 
 			TrackEntry last = ExpandToIndex(trackIndex);
 			if (last != null) {
@@ -202,10 +213,9 @@ namespace Spine {
 				tracks[trackIndex] = entry;
 
 			if (delay <= 0) {
-				if (last != null) {
-					delay += last.endTime;
-					if (animation != null) delay -= data.GetMix(last.animation, animation);
-				} else
+				if (last != null)
+					delay += last.endTime - data.GetMix(last.animation, animation);
+				else
 					delay = 0;
 			}
 			entry.delay = delay;
@@ -213,7 +223,7 @@ namespace Spine {
 			return entry;
 		}
 
-		/** @return May be null. */
+		/// <returns>May be null.</returns>
 		public TrackEntry GetCurrent (int trackIndex) {
 			if (trackIndex >= tracks.Count) return null;
 			return tracks[trackIndex];
@@ -264,21 +274,16 @@ namespace Spine {
 		internal TrackEntry next, previous;
 		internal Animation animation;
 		internal bool loop;
-		internal float delay, time, lastTime, endTime;
+		internal float delay, time, lastTime, endTime, timeScale = 1;
 		internal float mixTime, mixDuration;
 
 		public Animation Animation { get { return animation; } }
-		public bool Loop { get { return loop; } set { loop = value; } }
 		public float Delay { get { return delay; } set { delay = value; } }
-		public float EndTime { get { return EndTime; } set { EndTime = value; } }
-
-		public float Time {
-			get { return time; }
-			set {
-				time = value;
-				if (lastTime < value) lastTime = value;
-			}
-		}
+		public float Time { get { return time; } set { time = value; } }
+		public float LastTime { get { return lastTime; } set { lastTime = value; } }
+		public float EndTime { get { return endTime; } set { endTime = value; } }
+		public float TimeScale { get { return timeScale; } set { timeScale = value; } }
+		public bool Loop { get { return loop; } set { loop = value; } }
 
 		public event EventHandler<StartEndArgs> Start;
 		public event EventHandler<StartEndArgs> End;

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -38,9 +38,9 @@ namespace Spine {
 		internal BoneData parent;
 		internal String name;
 		internal float length, x, y, rotation, scaleX = 1, scaleY = 1;
-		internal bool inheritScale, inheritRotation;
+		internal bool inheritScale = true, inheritRotation = true;
 
-		/** May be null. */
+		/// <summary>May be null.</summary>
 		public BoneData Parent { get { return parent; } }
 		public String Name { get { return name; } }
 		public float Length { get { return length; } set { length = value; } }
@@ -52,7 +52,7 @@ namespace Spine {
 		public bool InheritScale { get { return inheritScale; } set { inheritScale = value; } }
 		public bool InheritRotation { get { return inheritRotation; } set { inheritRotation = value; } }
 
-		/** @param parent May be null. */
+		/// <param name="parent">May be null.</param>
 		public BoneData (String name, BoneData parent) {
 			if (name == null) throw new ArgumentNullException("name cannot be null.");
 			this.name = name;

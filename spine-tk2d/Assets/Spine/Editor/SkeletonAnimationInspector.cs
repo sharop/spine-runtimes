@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -38,13 +38,12 @@ using UnityEngine;
 [CustomEditor(typeof(SkeletonAnimation))]
 public class SkeletonAnimationInspector : Editor {
 	private SerializedProperty skeletonDataAsset, initialSkinName, timeScale, normals, tangents;
-	private SerializedProperty animationName, loop, useAnimationName;
+	private SerializedProperty animationName, loop;
 
 	void OnEnable () {
 		skeletonDataAsset = serializedObject.FindProperty("skeletonDataAsset");
-		animationName = serializedObject.FindProperty("animationName");
+		animationName = serializedObject.FindProperty("_animationName");
 		loop = serializedObject.FindProperty("loop");
-		useAnimationName = serializedObject.FindProperty("useAnimationName");
 		initialSkinName = serializedObject.FindProperty("initialSkinName");
 		timeScale = serializedObject.FindProperty("timeScale");
 		normals = serializedObject.FindProperty("calculateNormals");
@@ -53,16 +52,16 @@ public class SkeletonAnimationInspector : Editor {
 
 	override public void OnInspectorGUI () {
 		serializedObject.Update();
-		SkeletonComponent component = (SkeletonComponent)target;
+		SkeletonAnimation component = (SkeletonAnimation)target;
 
 		EditorGUIUtility.LookLikeInspector();
 		EditorGUILayout.PropertyField(skeletonDataAsset);
 		
 		if (component.skeleton != null) {
 			// Initial skin name.
-			String[] skins = new String[component.skeleton.Data.Skins.Count + 1];
+			String[] skins = new String[component.skeleton.Data.Skins.Count];
 			int skinIndex = 0;
-			for (int i = 0; i < skins.Length - 1; i++) {
+			for (int i = 0; i < skins.Length; i++) {
 				String name = component.skeleton.Data.Skins[i].Name;
 				skins[i] = name;
 				if (name == initialSkinName.stringValue)
@@ -76,18 +75,17 @@ public class SkeletonAnimationInspector : Editor {
 			EditorGUIUtility.LookLikeInspector();
 			EditorGUILayout.EndHorizontal();
 		
-			initialSkinName.stringValue = skinIndex == 0 ? null : skins[skinIndex];
+			initialSkinName.stringValue = skins[skinIndex];
 
 			// Animation name.
-			String[] animations = new String[component.skeleton.Data.Animations.Count + 2];
-			animations[0] = "<No Change>";
-			animations[1] = "<None>";
-			int animationIndex = useAnimationName.boolValue ? 1 : 0;
-			for (int i = 0; i < animations.Length - 2; i++) {
+			String[] animations = new String[component.skeleton.Data.Animations.Count + 1];
+			animations[0] = "<None>";
+			int animationIndex = 0;
+			for (int i = 0; i < animations.Length - 1; i++) {
 				String name = component.skeleton.Data.Animations[i].Name;
-				animations[i + 2] = name;
+				animations[i + 1] = name;
 				if (name == animationName.stringValue)
-					animationIndex = i + 2;
+					animationIndex = i + 1;
 			}
 		
 			EditorGUILayout.BeginHorizontal();
@@ -97,16 +95,10 @@ public class SkeletonAnimationInspector : Editor {
 			EditorGUIUtility.LookLikeInspector();
 			EditorGUILayout.EndHorizontal();
 
-			if (animationIndex == 0) {
-				animationName.stringValue = null;
-				useAnimationName.boolValue = false;
-			} else if (animationIndex == 1) {
-				animationName.stringValue = null;
-				useAnimationName.boolValue = true;
-			} else {
-				animationName.stringValue = animations[animationIndex];
-				useAnimationName.boolValue = true;
-			}
+			if (animationIndex == 0)
+				component.animationName = null;
+			else
+				component.animationName = animations[animationIndex];
 		}
 
 		// Animation loop.

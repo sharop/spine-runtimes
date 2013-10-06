@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -39,10 +39,10 @@
 #include <spine/Skeleton.h>
 #include <spine/SkeletonData.h>
 #include <string.h>
-#include <limits.h>
 
 TrackEntry* _TrackEntry_create () {
 	TrackEntry* entry = NEW(TrackEntry);
+	entry->timeScale = 1;
 	return entry;
 }
 
@@ -71,6 +71,7 @@ AnimationState* AnimationState_create (AnimationStateData* data) {
 	_AnimationState* internal = NEW(_AnimationState);
 	AnimationState* self = SUPER(internal);
 	internal->events = MALLOC(Event*, 64);
+	self->timeScale = 1;
 	CONST_CAST(AnimationStateData*, self->data) = data;
 	return self;
 }
@@ -84,18 +85,20 @@ void AnimationState_dispose (AnimationState* self) {
 
 void AnimationState_update (AnimationState* self, float delta) {
 	int i;
-	float time, endTime;
+	float time, endTime, trackDelta;
+	delta *= self->timeScale;
 	for (i = 0; i < self->trackCount; i++) {
 		TrackEntry* current = self->tracks[i];
 		if (!current) continue;
 
-		time = current->time + delta;
+		trackDelta = delta * current->timeScale;
+		time = current->time + trackDelta;
 		endTime = current->endTime;
 
 		current->time = time;
 		if (current->previous) {
-			current->previous->time += delta;
-			current->mixTime += delta;
+			current->previous->time += trackDelta;
+			current->mixTime += trackDelta;
 		}
 
 		/* Check if completed the animation or a loop iteration. */
@@ -106,11 +109,11 @@ void AnimationState_update (AnimationState* self, float delta) {
 			if (self->listener) self->listener(self, i, ANIMATION_COMPLETE, 0, count);
 		}
 
-		if (current->next && time >= current->next->delay) {
-			if (current->next->animation)
-				_AnimationState_setCurrent(self, i, current->next);
-			else
-				AnimationState_clearTrack(self, i);
+		if (current->next) {
+			if (time - trackDelta >= current->next->delay) _AnimationState_setCurrent(self, i, current->next);
+		} else {
+			/* End non-looping animation when it reaches its end time and there is no next entry. */
+			if (!current->loop && current->lastTime >= current->endTime) AnimationState_clearTrack(self, i);
 		}
 	}
 }
@@ -120,6 +123,7 @@ void AnimationState_apply (AnimationState* self, Skeleton* skeleton) {
 
 	int i, ii;
 	int eventCount;
+	float time;
 	TrackEntry* previous;
 	for (i = 0; i < self->trackCount; i++) {
 		TrackEntry* current = self->tracks[i];
@@ -127,19 +131,26 @@ void AnimationState_apply (AnimationState* self, Skeleton* skeleton) {
 
 		eventCount = 0;
 
+		time = current->time;
+		if (!current->loop && time > current->endTime) time = current->endTime;
+
 		previous = current->previous;
 		if (!previous) {
-			Animation_apply(current->animation, skeleton, current->lastTime, current->time, current->loop, internal->events,
+			Animation_apply(current->animation, skeleton, current->lastTime, time, current->loop, internal->events,
 					&eventCount);
 		} else {
 			float alpha = current->mixTime / current->mixDuration;
-			Animation_apply(previous->animation, skeleton, (float)INT_MAX, previous->time, previous->loop, 0, 0);
+
+			float previousTime = previous->time;
+			if (!previous->loop && previousTime > previous->endTime) previousTime = previous->endTime;
+			Animation_apply(previous->animation, skeleton, previousTime, previousTime, previous->loop, 0, 0);
+
 			if (alpha >= 1) {
 				alpha = 1;
 				_TrackEntry_dispose(current->previous);
 				current->previous = 0;
 			}
-			Animation_mix(current->animation, skeleton, current->lastTime, current->time, current->loop, internal->events,
+			Animation_mix(current->animation, skeleton, current->lastTime, time, current->loop, internal->events,
 					&eventCount, alpha);
 		}
 
@@ -153,7 +164,7 @@ void AnimationState_apply (AnimationState* self, Skeleton* skeleton) {
 	}
 }
 
-void AnimationState_clear (AnimationState* self) {
+void AnimationState_clearTracks (AnimationState* self) {
 	int i;
 	for (i = 0; i < self->trackCount; i++)
 		AnimationState_clearTrack(self, i);
@@ -170,8 +181,8 @@ void AnimationState_clearTrack (AnimationState* self, int trackIndex) {
 	if (self->listener) self->listener(self, trackIndex, ANIMATION_END, 0, 0);
 
 	self->tracks[trackIndex] = 0;
-	_TrackEntry_disposeAll(current);
 	if (current->previous) _TrackEntry_dispose(current->previous);
+	_TrackEntry_disposeAll(current);
 }
 
 TrackEntry* _AnimationState_expandToIndex (AnimationState* self, int index) {
@@ -223,7 +234,7 @@ TrackEntry* AnimationState_setAnimation (AnimationState* self, int trackIndex, A
 	entry->animation = animation;
 	entry->loop = loop;
 	entry->time = 0;
-	entry->endTime = animation->duration;
+	entry->endTime = animation ? animation->duration : 0;
 	_AnimationState_setCurrent(self, trackIndex, entry);
 	return entry;
 }

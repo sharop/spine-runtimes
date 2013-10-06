@@ -8,8 +8,8 @@
  -- or without modification, are permitted provided that the following conditions
  -- are met:
  -- 
- -- 1. A Spine Single User License or Spine Professional License must be
- --    purchased from Esoteric Software and the license must remain valid:
+ -- 1. A Spine Essential, Professional, Enterprise, or Education License must
+ --    be purchased from Esoteric Software and the license must remain valid:
  --    http://esotericsoftware.com/
  -- 2. Redistributions of source code must retain this license, which is the
  --    above copyright notice, this declaration of conditions and the following
@@ -114,6 +114,10 @@ function spine.Skeleton.new (skeletonData, group)
 					else
 						print("Error creating image: " .. attachment.name)
 						image = spine.Skeleton.failed
+					end
+					print(slot.data.additiveBlending)
+					if slot.data.additiveBlending then
+						image.blendMode = "add"
 					end
 					images[slot] = image
 				end

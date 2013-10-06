@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -55,19 +55,19 @@ struct TrackEntry {
 	TrackEntry* previous;
 	Animation* animation;
 	int/*bool*/loop;
-	float delay, time, lastTime, endTime;
+	float delay, time, lastTime, endTime, timeScale;
 	AnimationStateListener listener;
 	float mixTime, mixDuration;
 };
 
 struct AnimationState {
 	AnimationStateData* const data;
+	float timeScale;
+	AnimationStateListener listener;
+	void* context;
 
 	int trackCount;
 	TrackEntry** tracks;
-
-	AnimationStateListener listener;
-	void* context;
 };
 
 /* @param data May be 0 for no mixing. */
@@ -77,7 +77,7 @@ void AnimationState_dispose (AnimationState* self);
 void AnimationState_update (AnimationState* self, float delta);
 void AnimationState_apply (AnimationState* self, struct Skeleton* skeleton);
 
-void AnimationState_clear (AnimationState* self);
+void AnimationState_clearTracks (AnimationState* self);
 void AnimationState_clearTrack (AnimationState* self, int trackIndex);
 
 /** Set the current animation. Any queued animations are cleared. */
@@ -85,8 +85,7 @@ TrackEntry* AnimationState_setAnimationByName (AnimationState* self, int trackIn
 TrackEntry* AnimationState_setAnimation (AnimationState* self, int trackIndex, Animation* animation, int/*bool*/loop);
 
 /** Adds an animation to be played delay seconds after the current or last queued animation, taking into account any mix
- * duration.
- * @param animation May be 0 to queue clearing the AnimationState. */
+ * duration. */
 TrackEntry* AnimationState_addAnimationByName (AnimationState* self, int trackIndex, const char* animationName, int/*bool*/loop,
 		float delay);
 TrackEntry* AnimationState_addAnimation (AnimationState* self, int trackIndex, Animation* animation, int/*bool*/loop,

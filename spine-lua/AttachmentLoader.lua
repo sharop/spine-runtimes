@@ -8,8 +8,8 @@
  -- or without modification, are permitted provided that the following conditions
  -- are met:
  -- 
- -- 1. A Spine Single User License or Spine Professional License must be
- --    purchased from Esoteric Software and the license must remain valid:
+ -- 1. A Spine Essential, Professional, Enterprise, or Education License must
+ --    be purchased from Esoteric Software and the license must remain valid:
  --    http://esotericsoftware.com/
  -- 2. Redistributions of source code must retain this license, which is the
  --    above copyright notice, this declaration of conditions and the following
@@ -35,7 +35,8 @@ local RegionAttachment = require "spine-lua.RegionAttachment"
 
 local AttachmentLoader = {
 	failed = {},
-	ATTACHMENT_REGION = "region"
+	ATTACHMENT_REGION = "region",
+	ATTACHMENT_BOUNDINGBOX = "boundingbox",
 }
 function AttachmentLoader.new ()
 	local self = {}
@@ -44,7 +45,10 @@ function AttachmentLoader.new ()
 		if type == AttachmentLoader.ATTACHMENT_REGION then
 			return RegionAttachment.new(name)
 		end
-		error("Unknown attachment type: " .. type .. " (" + name + ")")
+		if type == AttachmentLoader.ATTACHMENT_BOUNDINGBOX then
+			return nil -- BOZO - Implement bounding boxes.
+		end
+		error("Unknown attachment type: " .. type .. " (" .. name .. ")")
 	end
 
 	return self

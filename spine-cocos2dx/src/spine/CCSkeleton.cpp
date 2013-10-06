@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -140,6 +140,7 @@ void CCSkeleton::draw () {
 		skeleton->b *= skeleton->a;
 	}
 
+	int additive = 0;
 	CCTextureAtlas* textureAtlas = 0;
 	ccV3F_C4B_T2F_Quad quad;
 	quad.tl.vertices.z = 0;
@@ -151,17 +152,29 @@ void CCSkeleton::draw () {
 		if (!slot->attachment || slot->attachment->type != ATTACHMENT_REGION) continue;
 		RegionAttachment* attachment = (RegionAttachment*)slot->attachment;
 		CCTextureAtlas* regionTextureAtlas = getTextureAtlas(attachment);
-		if (regionTextureAtlas != textureAtlas) {
+
+		if (slot->data->additiveBlending != additive) {
 			if (textureAtlas) {
 				textureAtlas->drawQuads();
 				textureAtlas->removeAllQuads();
 			}
+			additive = !additive;
+			ccGLBlendFunc(blendFunc.src, additive ? GL_ONE : blendFunc.dst);
+		} else if (regionTextureAtlas != textureAtlas && textureAtlas) {
+			textureAtlas->drawQuads();
+			textureAtlas->removeAllQuads();
 		}
 		textureAtlas = regionTextureAtlas;
-		if (textureAtlas->getCapacity() == textureAtlas->getTotalQuads() &&
-			!textureAtlas->resizeCapacity(textureAtlas->getCapacity() * 2)) return;
+
+		int quadCount = textureAtlas->getTotalQuads();
+		if (textureAtlas->getCapacity() == quadCount) {
+			textureAtlas->drawQuads();
+			textureAtlas->removeAllQuads();
+			if (!textureAtlas->resizeCapacity(textureAtlas->getCapacity() * 2)) return;
+		}
+
 		RegionAttachment_updateQuad(attachment, slot, &quad, premultipliedAlpha);
-		textureAtlas->updateQuad(&quad, textureAtlas->getTotalQuads());
+		textureAtlas->updateQuad(&quad, quadCount);
 	}
 	if (textureAtlas) {
 		textureAtlas->drawQuads();

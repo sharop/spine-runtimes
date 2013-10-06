@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -694,7 +694,8 @@ spine.Skeleton.prototype = {
 };
 
 spine.AttachmentType = {
-	region: 0
+	region: 0,
+	boundingbox: 1
 };
 
 spine.RegionAttachment = function () {
@@ -1339,6 +1340,8 @@ spine.AtlasAttachmentLoader = function (atlas) {
 spine.AtlasAttachmentLoader.prototype = {
 	newAttachment: function (skin, type, name) {
 		switch (type) {
+		case spine.AttachmentType.boundingbox:
+			return null; // BOZO - Implement bounding boxes.
 		case spine.AttachmentType.region:
 			var region = this.atlas.findRegion(name);
 			if (!region) throw "Region not found in atlas: " + name + " (" + type + ")";

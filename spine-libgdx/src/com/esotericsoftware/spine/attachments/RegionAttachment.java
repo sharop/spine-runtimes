@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -75,10 +75,10 @@ public class RegionAttachment extends Attachment {
 		if (region instanceof AtlasRegion) {
 			AtlasRegion region = (AtlasRegion)this.region;
 			if (region.rotate) {
-				localX += region.offsetX / region.originalWidth * height;
-				localY += region.offsetY / region.originalHeight * width;
-				localX2 -= (region.originalWidth - region.offsetX - region.packedHeight) / region.originalWidth * height;
-				localY2 -= (region.originalHeight - region.offsetY - region.packedWidth) / region.originalHeight * width;
+				localX += region.offsetX / region.originalWidth * width;
+				localY += region.offsetY / region.originalHeight * height;
+				localX2 -= (region.originalWidth - region.offsetX - region.packedHeight) / region.originalWidth * width;
+				localY2 -= (region.originalHeight - region.offsetY - region.packedWidth) / region.originalHeight * height;
 			} else {
 				localX += region.offsetX / region.originalWidth * width;
 				localY += region.offsetY / region.originalHeight * height;

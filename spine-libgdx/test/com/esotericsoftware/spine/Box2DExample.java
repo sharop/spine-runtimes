@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -58,6 +58,7 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 
 public class Box2DExample extends ApplicationAdapter {
 	SpriteBatch batch;
@@ -68,6 +69,7 @@ public class Box2DExample extends ApplicationAdapter {
 	Skeleton skeleton;
 	Animation animation;
 	float time;
+	Array<Event> events = new Array();
 
 	OrthographicCamera camera;
 	Box2DDebugRenderer box2dRenderer;
@@ -146,7 +148,7 @@ public class Box2DExample extends ApplicationAdapter {
 		batch.setTransformMatrix(camera.view);
 		batch.begin();
 
-		animation.apply(skeleton, time, true);
+		animation.apply(skeleton, time, time, true, events);
 		skeleton.x += 8 * delta;
 		skeleton.updateWorldTransform();
 		skeletonRenderer.draw(batch, skeleton);

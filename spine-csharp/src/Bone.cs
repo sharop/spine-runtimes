@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -61,7 +61,7 @@ namespace Spine {
 		public float WorldScaleX { get { return worldScaleX; } }
 		public float WorldScaleY { get { return worldScaleY; } }
 
-		/** @param parent May be null. */
+		/// <param name="parent">May be null.</param>
 		public Bone (BoneData data, Bone parent) {
 			if (data == null) throw new ArgumentNullException("data cannot be null.");
 			this.data = data;
@@ -69,7 +69,7 @@ namespace Spine {
 			SetToSetupPose();
 		}
 
-		/** Computes the world SRT using the parent bone and the local SRT. */
+		/// <summary>Computes the world SRT using the parent bone and the local SRT.</summary>
 		public void UpdateWorldTransform (bool flipX, bool flipY) {
 			Bone parent = this.parent;
 			if (parent != null) {

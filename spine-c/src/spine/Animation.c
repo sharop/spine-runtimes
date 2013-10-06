@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -515,12 +515,11 @@ void AttachmentTimeline_setFrame (AttachmentTimeline* self, int frameIndex, floa
 
 void _EventTimeline_apply (const Timeline* timeline, Skeleton* skeleton, float lastTime, float time, Event** firedEvents,
 		int* eventCount, float alpha) {
-	int frameIndex;
+	if (!firedEvents) return;
 	EventTimeline* self = (EventTimeline*)timeline;
+	int frameIndex;
 
-	if (time < self->frames[0]) return; /* Time is before first frame. */
-
-	if (lastTime >= self->frames[self->framesLength - 1]) return; /* Last time is after last frame. */
+	if (lastTime >= self->frames[self->framesLength - 1]) return; // Last time is after last frame.
 
 	if (lastTime > time) {
 		/* Fire events after last time for looped animations. */
@@ -528,20 +527,18 @@ void _EventTimeline_apply (const Timeline* timeline, Skeleton* skeleton, float l
 		lastTime = 0;
 	}
 
-	if (self->framesLength == 1)
+	if (lastTime <= self->frames[0] || self->framesLength == 1)
 		frameIndex = 0;
 	else {
 		float frame;
 		frameIndex = binarySearch(self->frames, self->framesLength, lastTime, 1);
 		frame = self->frames[frameIndex];
-		while (frameIndex > 0) {
-			float lastFrame = self->frames[frameIndex - 1];
-			/* Fire multiple events with the same frame and events that occurred at lastTime. */
-			if (lastFrame != frame && lastFrame != lastTime) break;
+		while (frameIndex > 0) { /* Fire multiple events with the same frame. */
+			if (self->frames[frameIndex - 1] != frame) break;
 			frameIndex--;
 		}
 	}
-	for (; frameIndex < self->framesLength && time > self->frames[frameIndex]; frameIndex++) {
+	for (; frameIndex < self->framesLength && time >= self->frames[frameIndex]; frameIndex++) {
 		firedEvents[*eventCount] = self->events[frameIndex];
 		(*eventCount)++;
 	}

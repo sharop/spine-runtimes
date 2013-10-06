@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -38,7 +38,9 @@ function SpriteBatch (draw2D) {
 SpriteBatch.prototype = {
 	count: 0,
 	texture: null,
+	blendMode: null,
 	begin: function (blendMode, sortMode) {
+		this.blendMode = blendMode;
 		this.draw2D.begin(blendMode, sortMode);
 	},
 	add: function (texture, x1, y1, x2, y2, x3, y3, x4, y4, r, g, b, a, u1, v1, u2, v2) {

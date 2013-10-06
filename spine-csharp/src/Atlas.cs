@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -41,27 +41,27 @@ using Windows.Storage;
 #endif
 
 namespace Spine {
-    public class Atlas {
+	public class Atlas {
 		List<AtlasPage> pages = new List<AtlasPage>();
 		List<AtlasRegion> regions = new List<AtlasRegion>();
 		TextureLoader textureLoader;
 
 #if WINDOWS_STOREAPP
-        private async Task ReadFile(string path, TextureLoader textureLoader) {
-            var folder = Windows.ApplicationModel.Package.Current.InstalledLocation;
-            var file = await folder.GetFileAsync(path).AsTask().ConfigureAwait(false);
-            using (var reader = new StreamReader(await file.OpenStreamForReadAsync().ConfigureAwait(false))) {
-                try {
-                    Load(reader, Path.GetDirectoryName(path), textureLoader);
-                } catch (Exception ex) {
-                    throw new Exception("Error reading atlas file: " + path, ex);
-                }
-            }
-        }
+		private async Task ReadFile(string path, TextureLoader textureLoader) {
+			var folder = Windows.ApplicationModel.Package.Current.InstalledLocation;
+			var file = await folder.GetFileAsync(path).AsTask().ConfigureAwait(false);
+			using (var reader = new StreamReader(await file.OpenStreamForReadAsync().ConfigureAwait(false))) {
+				try {
+					Load(reader, Path.GetDirectoryName(path), textureLoader);
+				} catch (Exception ex) {
+					throw new Exception("Error reading atlas file: " + path, ex);
+				}
+			}
+		}
 
-        public Atlas(String path, TextureLoader textureLoader) {
-            this.ReadFile(path, textureLoader).Wait();
-        }
+		public Atlas(String path, TextureLoader textureLoader) {
+			this.ReadFile(path, textureLoader).Wait();
+		}
 #else
 		public Atlas (String path, TextureLoader textureLoader) {
 			using (StreamReader reader = new StreamReader(path)) {
@@ -74,8 +74,14 @@ namespace Spine {
 		}
 #endif
 
-        public Atlas (TextReader reader, String dir, TextureLoader textureLoader) {
+		public Atlas (TextReader reader, String dir, TextureLoader textureLoader) {
 			Load(reader, dir, textureLoader);
+		}
+
+		public Atlas (List<AtlasPage> pages, List<AtlasRegion> regions) {
+			this.pages = pages;
+			this.regions = regions;
+			this.textureLoader = null;
 		}
 
 		private void Load (TextReader reader, String imagesDir, TextureLoader textureLoader) {
@@ -175,7 +181,7 @@ namespace Spine {
 			return line.Substring(colon + 1).Trim();
 		}
 
-		/** Returns the number of tuple values read (2 or 4). */
+		/// <summary>Returns the number of tuple values read (2 or 4).</summary>
 		static int readTuple (TextReader reader, String[] tuple) {
 			String line = reader.ReadLine();
 			int colon = line.IndexOf(':');
@@ -194,9 +200,9 @@ namespace Spine {
 			return i + 1;
 		}
 
-		/** Returns the first region found with the specified name. This method uses string comparison to find the region, so the result
-		 * should be cached rather than calling this method multiple times.
-		 * @return The region, or null. */
+		/// <summary>Returns the first region found with the specified name. This method uses string comparison to find the region, so the result
+		/// should be cached rather than calling this method multiple times.</summary>
+		/// <returns>The region, or null.</returns>
 		public AtlasRegion FindRegion (String name) {
 			for (int i = 0, n = regions.Count; i < n; i++)
 				if (regions[i].name == name) return regions[i];
@@ -204,6 +210,7 @@ namespace Spine {
 		}
 
 		public void Dispose () {
+			if (textureLoader == null) return;
 			for (int i = 0, n = pages.Count; i < n; i++)
 				textureLoader.Unload(pages[i].rendererObject);
 		}

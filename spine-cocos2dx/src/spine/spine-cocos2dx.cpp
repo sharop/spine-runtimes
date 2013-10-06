@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -38,7 +38,7 @@ USING_NS_CC;
 
 void _AtlasPage_createTexture (AtlasPage* self, const char* path) {
 	CCTexture2D* texture = CCTextureCache::sharedTextureCache()->addImage(path);
-	CCTextureAtlas* textureAtlas = CCTextureAtlas::createWithTexture(texture, 4);
+	CCTextureAtlas* textureAtlas = CCTextureAtlas::createWithTexture(texture, 128);
 	textureAtlas->retain();
 	self->rendererObject = textureAtlas;
 	self->width = texture->getPixelsWide();

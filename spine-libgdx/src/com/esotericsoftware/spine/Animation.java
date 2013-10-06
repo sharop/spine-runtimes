@@ -1,5 +1,5 @@
 /******************************************************************************
- * Spine Runtime Software License - Version 1.0
+ * Spine Runtime Software License - Version 1.1
  * 
  * Copyright (c) 2013, Esoteric Software
  * All rights reserved.
@@ -8,8 +8,8 @@
  * or without modification, are permitted provided that the following conditions
  * are met:
  * 
- * 1. A Spine Single User License or Spine Professional License must be
- *    purchased from Esoteric Software and the license must remain valid:
+ * 1. A Spine Essential, Professional, Enterprise, or Education License must
+ *    be purchased from Esoteric Software and the license must remain valid:
  *    http://esotericsoftware.com/
  * 2. Redistributions of source code must retain this license, which is the
  *    above copyright notice, this declaration of conditions and the following
@@ -63,14 +63,9 @@ public class Animation {
 		this.duration = duration;
 	}
 
-	/** @deprecated */
-	public void apply (Skeleton skeleton, float time, boolean loop) {
-		apply(skeleton, time, time, loop, null);
-	}
-
 	/** Poses the skeleton at the specified time for this animation.
-	 * @param lastTime The last time the animation was applied. Can be equal to time if events shouldn't be fired.
-	 * @param events Any triggered events are added. May be null if lastTime is known to not cause any events to trigger. */
+	 * @param lastTime The last time the animation was applied.
+	 * @param events Any triggered events are added. */
 	public void apply (Skeleton skeleton, float lastTime, float time, boolean loop, Array<Event> events) {
 		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
 
@@ -84,14 +79,9 @@ public class Animation {
 			timelines.get(i).apply(skeleton, lastTime, time, events, 1);
 	}
 
-	/** @deprecated */
-	public void mix (Skeleton skeleton, float time, boolean loop, float alpha) {
-		mix(skeleton, time, time, loop, null, alpha);
-	}
-
 	/** Poses the skeleton at the specified time for this animation mixed with the current pose.
-	 * @param lastTime The last time the animation was applied. Can be equal to time if events shouldn't be fired.
-	 * @param events Any triggered events are added. May be null if lastTime is known to not cause any events to trigger.
+	 * @param lastTime The last time the animation was applied.
+	 * @param events Any triggered events are added.
 	 * @param alpha The amount of this animation that affects the current pose. */
 	public void mix (Skeleton skeleton, float lastTime, float time, boolean loop, Array<Event> events, float alpha) {
 		if (skeleton == null) throw new IllegalArgumentException("skeleton cannot be null.");
@@ -114,7 +104,8 @@ public class Animation {
 		return name;
 	}
 
-	/** @param target After the first and before the last entry. */
+	/** @param target After the first and before the last value.
+	 * @return index of first value greater than the target. */
 	static int binarySearch (float[] values, float target, int step) {
 		int low = 0;
 		int high = values.length / step - 2;
@@ -543,32 +534,29 @@ public class Animation {
 		}
 
 		public void apply (Skeleton skeleton, float lastTime, float time, Array<Event> firedEvents, float alpha) {
+			if (firedEvents == null) return;
 			float[] frames = this.frames;
-			if (time < frames[0]) return; // Time is before first frame.
-
 			int frameCount = frames.length;
+
 			if (lastTime >= frames[frameCount - 1]) return; // Last time is after last frame.
 
-			if (lastTime > time) {
-				// Fire events after last time for looped animations.
+			if (lastTime > time) { // Fire events after last time for looped animations.
 				apply(skeleton, lastTime, Integer.MAX_VALUE, firedEvents, alpha);
 				lastTime = 0;
 			}
 
 			int frameIndex;
-			if (frameCount == 1)
+			if (lastTime <= frames[0] || frameCount == 1)
 				frameIndex = 0;
 			else {
 				frameIndex = binarySearch(frames, lastTime, 1);
 				float frame = frames[frameIndex];
-				while (frameIndex > 0) {
-					float lastFrame = frames[frameIndex - 1];
-					// Fire multiple events with the same frame and events that occurred at lastTime.
-					if (lastFrame != frame && lastFrame != lastTime) break;
+				while (frameIndex > 0) { // Fire multiple events with the same frame.
+					if (frames[frameIndex - 1] != frame) break;
 					frameIndex--;
 				}
 			}
-			for (; frameIndex < frameCount && time > frames[frameIndex]; frameIndex++)
+			for (; frameIndex < frameCount && time >= frames[frameIndex]; frameIndex++)
 				firedEvents.add(events[frameIndex]);
 		}
 	}

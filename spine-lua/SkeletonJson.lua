@@ -8,8 +8,8 @@
  -- or without modification, are permitted provided that the following conditions
  -- are met:
  -- 
- -- 1. A Spine Single User License or Spine Professional License must be
- --    purchased from Esoteric Software and the license must remain valid:
+ -- 1. A Spine Essential, Professional, Enterprise, or Education License must
+ --    be purchased from Esoteric Software and the license must remain valid:
  --    http://esotericsoftware.com/
  -- 2. Redistributions of source code must retain this license, which is the
  --    above copyright notice, this declaration of conditions and the following
@@ -82,10 +82,16 @@ function SkeletonJson.new (attachmentLoader)
 			boneData.rotation = (boneMap["rotation"] or 0)
 			boneData.scaleX = (boneMap["scaleX"] or 1)
 			boneData.scaleY = (boneMap["scaleY"] or 1)
-			-- typical 'value or default' will not work here, as in practice the possible values are 'false' or nil,
-			-- both of which evaluate to false and the default value is true
-      if boneMap["inheritScale"] == false then boneData.inheritScale = false else boneData.inheritScale = true end
-      if boneMap["inheritRotation"] == false then boneData.inheritRotation = false else boneData.inheritRotation = true end			
+			if boneMap["inheritScale"] == false then
+				boneData.inheritScale = false
+			else
+				boneData.inheritScale = true
+			end
+			if boneMap["inheritRotation"] == false then
+				boneData.inheritRotation = false
+			else
+				boneData.inheritRotation = true
+			end
 			table.insert(skeletonData.bones, boneData)
 		end
 
@@ -109,9 +115,10 @@ function SkeletonJson.new (attachmentLoader)
 				end
 
 				slotData.attachmentName = slotMap["attachment"]
-        table.insert(skeletonData.slots, slotData)
-        skeletonData.slotNameIndices[slotData.name] = #skeletonData.slots
-        
+				slotData.additiveBlending = slotMap["additive"]
+
+				table.insert(skeletonData.slots, slotData)
+				skeletonData.slotNameIndices[slotData.name] = #skeletonData.slots
 			end
 		end
 
