@@ -92,7 +92,7 @@
     <ClInclude Include="include\spine\Skin.h" />
     <ClInclude Include="include\spine\Slot.h" />
     <ClInclude Include="include\spine\SlotData.h" />
-    <ClInclude Include="include\spine\spine.h" />
+    <ClInclude Include="include\spine\ine.h" />
     <ClInclude Include="src\spine\Json.h" />
   </ItemGroup>
   <ItemGroup>

@@ -37,7 +37,13 @@ function BoneData.new (name, parent)
 
 	local self = {
 		name = name,
-		parent = parent
+		parent = parent,
+		length = 0,
+		x = 0, y = 0,
+		rotation = 0,
+		scaleX = 1, scaleY = 1,
+		inheritScale = true,
+		inheritRotation = true
 	}
 
 	return self

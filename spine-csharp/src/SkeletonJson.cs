@@ -80,8 +80,14 @@ namespace Spine {
 		}
 #else
 		public SkeletonData ReadSkeletonData (String path) {
-			using (StreamReader reader = new StreamReader(path)) {
-				SkeletonData skeletonData = ReadSkeletonData(reader);
+#if WINDOWS_PHONE
+            Stream stream = Microsoft.Xna.Framework.TitleContainer.OpenStream(path);
+            using (StreamReader reader = new StreamReader(stream))
+            {
+#else
+            using (StreamReader reader = new StreamReader(path)) {
+#endif
+                SkeletonData skeletonData = ReadSkeletonData(reader);
 				skeletonData.name = Path.GetFileNameWithoutExtension(path);
 				return skeletonData;
 			}
@@ -354,7 +360,7 @@ namespace Spine {
 				EventTimeline timeline = new EventTimeline(eventsMap.Count);
 				int frameIndex = 0;
 				foreach (Dictionary<String, Object> eventMap in eventsMap) {
-					EventData eventData = skeletonData.findEvent((String)eventMap["name"]);
+					EventData eventData = skeletonData.FindEvent((String)eventMap["name"]);
 					if (eventData == null) throw new Exception("Event not found: " + eventMap["name"]);
 					Event e = new Event(eventData);
 					e.Int = GetInt(eventMap, "int", eventData.Int);

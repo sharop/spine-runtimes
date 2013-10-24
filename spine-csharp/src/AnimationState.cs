@@ -57,7 +57,7 @@ namespace Spine {
 
 		public void Update (float delta) {
 			delta *= timeScale;
-			for (int i = 0, n = tracks.Count; i < n; i++) {
+			for (int i = 0; i < tracks.Count; i++) {
 				TrackEntry current = tracks[i];
 				if (current == null) continue;
 
@@ -91,7 +91,7 @@ namespace Spine {
 		public void Apply (Skeleton skeleton) {
 			List<Event> events = this.events;
 
-			for (int i = 0, n = tracks.Count; i < n; i++) {
+			for (int i = 0; i < tracks.Count; i++) {
 				TrackEntry current = tracks[i];
 				if (current == null) continue;
 
@@ -274,7 +274,7 @@ namespace Spine {
 		internal TrackEntry next, previous;
 		internal Animation animation;
 		internal bool loop;
-		internal float delay, time, lastTime, endTime, timeScale = 1;
+		internal float delay, time, lastTime = -1, endTime, timeScale = 1;
 		internal float mixTime, mixDuration;
 
 		public Animation Animation { get { return animation; } }
@@ -304,6 +304,10 @@ namespace Spine {
 
 		internal void OnComplete (AnimationState state, int index, int loopCount) {
 			if (Complete != null) Complete(state, new CompleteArgs(index, loopCount));
+		}
+
+		override public String ToString () {
+			return animation == null ? "<none>" : animation.name;
 		}
 	}
 }
