@@ -36,6 +36,7 @@ import flash.display.Bitmap;
 import flash.display.BitmapData;
 
 import spine.atlas.AtlasPage;
+import spine.atlas.AtlasRegion;
 import spine.atlas.TextureLoader;
 
 public class SingleTextureLoader implements TextureLoader {
@@ -51,14 +52,17 @@ public class SingleTextureLoader implements TextureLoader {
 			throw new ArgumentError("object must be a Bitmap or BitmapData.");
 	}
 
-	public function load (page:AtlasPage, path:String) : void {
+	public function loadPage (page:AtlasPage, path:String) : void {
 		page.rendererObject = pageBitmapData;
 		page.width = pageBitmapData.width;
 		page.height = pageBitmapData.height;
 	}
+	
+	public function loadRegion (region:AtlasRegion) : void {
+	}
 
-	public function unload (texture:Object) : void {
-		BitmapData(texture).dispose();
+	public function unloadPage (page:AtlasPage) : void {
+		BitmapData(page.rendererObject).dispose();
 	}
 }
 
